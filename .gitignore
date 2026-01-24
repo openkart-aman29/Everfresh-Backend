@@ -1,0 +1,73 @@
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+lib/
+out-tsc/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables and secrets
+.env
+.env.*
+envs/
+rsa-keys/
+*.pem
+*.key
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Test output
+.jest/
+.cache/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Misc
+.parcel-cache/
+.turbo/
+.eslintcache
+.vscode-test/
+*.tgz
+
+.env
+dist/
+*.log
+logs
+.DS_Store
+coverage/
+.vscode/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.development
+.env.test
+.env.production
+media/users/*.png
+media/employees/*.png
+media/users/*.jpg
+media/employees/*.jpg
+media/users/*.webp
+media/employees/*.webp
+media/users/*.jpeg
+media/employees/*.jpeg
