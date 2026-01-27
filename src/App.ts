@@ -13,11 +13,6 @@ const appLogger = createFeatureLogger('App');
 
 const app = express();
 
-/**
- * Trust proxy (IMPORTANT for rate-limit, real IPs behind Nginx/Proxmox)
- * 1 = trust first proxy
- */
-app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
