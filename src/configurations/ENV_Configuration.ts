@@ -64,6 +64,7 @@ export const ENV = cleanEnv(process.env, {
     JWT_ISSUER: str({ default: 'everfresh-api' }),
     JWT_AUDIENCE: str({ default: 'everfresh-client' }),
     JWT_ACCESS_TOKEN_EXPIRATION: num({ default: 900 }),
+    // JWT_ACCESS_TOKEN_EXPIRATION: num({ default: 30 }),
     JWT_REFRESH_TOKEN_EXPIRATION: num({ default: 604800 }),
 
     JWT_PRIVATE_KEY_PATH: str({ default: './rsa-keys/private.pem' }),
@@ -73,12 +74,16 @@ export const ENV = cleanEnv(process.env, {
     // # =========================
     // # COOKIE (DEV)
     // # =========================
-    REFRESH_TOKEN_COOKIE_NAME: str({ default: 'everfresh_rt' }),
-    REFRESH_TOKEN_COOKIE_PATH: str({ default: '/auth/refresh' }),
+    // Keep cookie name backward-compatible with frontend apps
+    REFRESH_TOKEN_COOKIE_NAME: str({ default: 'refreshToken' }),
+    // Use root path so cookie is available to signout and other endpoints
+    REFRESH_TOKEN_COOKIE_PATH: str({ default: '/' }),
     REFRESH_TOKEN_COOKIE_SECURE: str({ default: 'true' }),
     REFRESH_TOKEN_COOKIE_HTTP_ONLY: str({ default: 'true' }),
-    REFRESH_TOKEN_COOKIE_SAME_SITE: str({ default: 'strict' }),
-    COOKIE_DOMAIN: str({ default: 'localhost' }),
+    // For cross-origin admin dashboard, default to 'none' (set via .env if needed)
+    REFRESH_TOKEN_COOKIE_SAME_SITE: str({ default: 'none' }),
+    COOKIE_DOMAIN: str({ default: 'www.admin.everfresh.ae' }),
+    // COOKIE_DOMAIN: str({ default: 'localhost' }),
 
 
     // # =========================
@@ -86,10 +91,11 @@ export const ENV = cleanEnv(process.env, {
     // # =========================
     // Security
     HEADER_AUTH_BEARER: str({ default: 'Bearer' }),
-    ALLOWED_ORIGINS: str({ default: 'http://www.admin.everfresh.ae', }),
+    ALLOWED_ORIGINS: str({ default: 'http://admin.everfresh.ae, https://www.everfresh.ae, http://localhost:5173' }),
     RATE_LIMIT_WINDOW_MS: num({ default: 600000 }),
     RATE_LIMIT_MAX_REQUESTS: num({ default: 10000 }),
     FRONTEND_URL: str({ default: 'https://www.everfresh.ae' }),
+    // FRONTEND_URL: str({ default: 'https://localhost:5173/' }),
 
 
     // # =========================

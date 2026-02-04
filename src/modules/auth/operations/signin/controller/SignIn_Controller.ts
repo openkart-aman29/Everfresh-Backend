@@ -5,7 +5,16 @@ import { sendResponse } from '@/utilities/http/http-response/Standard_Response';
 import { StandardResponseInterface } from '@/utilities/global_interfaces/Standard_Response_Interface';
 import { getErrorStatus } from '@/utilities/http/constants/HTTP_Status_Codes';
 import { signInService } from '@/modules/auth/operations/signin/service/SignIn_Service';
-import { COOKIE_DOMAIN, REFRESH_TOKEN_EXPIRATION_TIME } from "@/configurations/ENV_Configuration";
+import { tokenRotationManager } from '@/modules/auth/manager/Token_Rotation_Manager';
+import {
+    COOKIE_DOMAIN,
+    REFRESH_TOKEN_EXPIRATION_TIME,
+    REFRESH_TOKEN_COOKIE_NAME,
+    REFRESH_TOKEN_COOKIE_PATH,
+    REFRESH_TOKEN_COOKIE_SECURE,
+    REFRESH_TOKEN_COOKIE_HTTP_ONLY,
+    REFRESH_TOKEN_COOKIE_SAME_SITE
+} from "@/configurations/ENV_Configuration";
 import { SignInResponseInterface } from '@/modules/auth/interface/Auth_Interface';
 
 export const signInController = async (req: Request, res: Response) => {
@@ -35,7 +44,8 @@ export const signInController = async (req: Request, res: Response) => {
         }
 
         // Extract device info and IP
-        const deviceInfo = req.headers['user-agent'];
+        const rawDeviceInfo = req.headers['user-agent'] as string | undefined;
+        const deviceInfo = tokenRotationManager.extractDeviceInfo(rawDeviceInfo);
         const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
 
         // Call service
@@ -50,15 +60,16 @@ export const signInController = async (req: Request, res: Response) => {
 
             authLogger.info("Cookie domain @ signInController = ", COOKIE_DOMAIN);
 
-            // Set refresh token as HTTP-Only, Secure, and with SameSite settings
-            res.cookie('refreshToken', serviceResponse.data.refreshToken, {
-                httpOnly: true,    // Prevent JavaScript access
-                secure: true,      // Ensure transmission over HTTPS
-                sameSite: 'none', // Protect from CSRF
+            // Set refresh token as HTTP-Only, Secure, and with SameSite settings (env-driven)
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, serviceResponse.data.refreshToken, {
+                httpOnly: REFRESH_TOKEN_COOKIE_HTTP_ONLY === 'true',
+                secure: REFRESH_TOKEN_COOKIE_SECURE === 'true' || (process.env.NODE_ENV === 'production'),
+                sameSite: (REFRESH_TOKEN_COOKIE_SAME_SITE as any) || 'none',
                 maxAge: REFRESH_TOKEN_EXPIRATION_TIME * 1000, // Convert seconds to milliseconds
+                // Use root path so cookie is sent to signout and other endpoints
                 path: '/',
                 domain: COOKIE_DOMAIN,
-                partitioned: true, // Add this new attribute
+                partitioned: true // Enhanced privacy (Chrome 118+)
             });
              const controllerResponse: StandardResponseInterface<Omit<SignInResponseInterface , 'refreshToken'>> = {
                 success: true,

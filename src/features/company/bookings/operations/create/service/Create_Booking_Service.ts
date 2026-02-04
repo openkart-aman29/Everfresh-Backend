@@ -12,6 +12,7 @@ import { createBookingDAO } from '@/features/company/bookings/operations/create/
 import { createBookingAddonsDAO } from '@/features/company/bookings/operations/create/dao/Create_Booking_Addons_DAO';
 import { calculateBookingAmount } from '@/features/company/bookings/operations/helpers/Calculate_Booking_Amount_Helper';
 import { checkStaffAvailability } from '@/features/company/bookings/operations/helpers/Check_Staff_Availability_Helper';
+import { autoAssignStaff } from '@/features/company/bookings/operations/helpers/Auto_Assign_Staff_Helper';
 
 interface CreateBookingInput {
     company_id: string;
@@ -115,12 +116,67 @@ export const createBookingService = async (
         
         // ========== STEP 3: Validate Staff (ONLY IF PROVIDED) ==========
         // 🔥 KEY CHANGE: Only validate staff if staff_id is explicitly provided
-        if (inputData.staff_id && inputData.staff_id.trim() !== '') {
-            bookingLogger.info('Staff assignment requested, validating staff', {
-                staff_id: inputData.staff_id
-            });
+        // if (inputData.staff_id && inputData.staff_id.trim() !== '') {
+        //     bookingLogger.info('Staff assignment requested, validating staff', {
+        //         staff_id: inputData.staff_id
+        //     });
             
-            // Check if staff exists and belongs to company
+        //     // Check if staff exists and belongs to company
+        //     const staffExists = await checkStaffExistDAO(
+        //         inputData.staff_id,
+        //         inputData.company_id
+        //     );
+            
+        //     if (!staffExists.exists) {
+        //         const status = 404;
+        //         return {
+        //             success: false,
+        //             message: 'STAFF_NOT_FOUND',
+        //             status,
+        //             code: getErrorStatus(status),
+        //             data: null,
+        //             errors: [{ field: 'staff_id', message: 'Staff not found or unavailable' }],
+        //         };
+        //     }
+            
+        //     // Check staff availability for the scheduled time
+        //     const endTime = inputData.scheduled_time_end || inputData.scheduled_time_start;
+            
+        //     const isAvailable = await checkStaffAvailability(
+        //         inputData.staff_id,
+        //         inputData.scheduled_date,
+        //         inputData.scheduled_time_start,
+        //         endTime
+        //     );
+            
+        //     if (!isAvailable) {
+        //         const status = 409;
+        //         return {
+        //             success: false,
+        //             message: 'STAFF_NOT_AVAILABLE',
+        //             status,
+        //             code: getErrorStatus(status),
+        //             data: null,
+        //             errors: [{ 
+        //                 field: 'staff_id', 
+        //                 message: 'Staff already has a booking during this time slot' 
+        //             }],
+        //         };
+        //     }
+            
+        //     bookingLogger.info('Staff availability confirmed', {
+        //         staff_id: inputData.staff_id,
+        //         scheduled_date: inputData.scheduled_date,
+        //         time_slot: `${inputData.scheduled_time_start} - ${endTime}`
+        //     });
+        // } else {
+        //     bookingLogger.info('Booking created without staff assignment - will be assigned later');
+        // }
+
+         let finalStaffId: string | null = null;
+        
+        if (inputData.staff_id && inputData.staff_id.trim() !== '') {
+            // Manual staff assignment (existing logic)
             const staffExists = await checkStaffExistDAO(
                 inputData.staff_id,
                 inputData.company_id
@@ -138,9 +194,7 @@ export const createBookingService = async (
                 };
             }
             
-            // Check staff availability for the scheduled time
             const endTime = inputData.scheduled_time_end || inputData.scheduled_time_start;
-            
             const isAvailable = await checkStaffAvailability(
                 inputData.staff_id,
                 inputData.scheduled_date,
@@ -163,13 +217,33 @@ export const createBookingService = async (
                 };
             }
             
-            bookingLogger.info('Staff availability confirmed', {
-                staff_id: inputData.staff_id,
-                scheduled_date: inputData.scheduled_date,
-                time_slot: `${inputData.scheduled_time_start} - ${endTime}`
-            });
+            finalStaffId = inputData.staff_id;
+            bookingLogger.info('Staff manually assigned', { staff_id: finalStaffId });
+            
         } else {
-            bookingLogger.info('Booking created without staff assignment - will be assigned later');
+            // 🔥 AUTO-ASSIGN STAFF
+            bookingLogger.info('Attempting automatic staff assignment');
+            
+            const assignmentResult = await autoAssignStaff(
+                inputData.company_id,
+                inputData.service_id,
+                inputData.scheduled_date,
+                inputData.scheduled_time_start,
+                inputData.scheduled_time_end || null
+            );
+            
+            if (assignmentResult.assigned && assignmentResult.staff_id) {
+                finalStaffId = assignmentResult.staff_id;
+                bookingLogger.info('Staff automatically assigned', {
+                    staff_id: finalStaffId,
+                    reason: assignmentResult.reason
+                });
+            } else {
+                bookingLogger.warn('No staff available for automatic assignment', {
+                    reason: assignmentResult.reason
+                });
+                // finalStaffId remains null - booking will be created without staff
+            }
         }
         
         // ========== STEP 4: Fetch Addons (if provided) ==========
@@ -227,7 +301,7 @@ export const createBookingService = async (
             company_id: inputData.company_id,
             customer_id: inputData.customer_id,
             service_id: inputData.service_id,
-            staff_id: inputData.staff_id || null, // 🔥 NULL if not provided
+            staff_id: finalStaffId, // 🔥 NULL if not provided
             status: 'pending',
             scheduled_date: inputData.scheduled_date,
             scheduled_time_start: inputData.scheduled_time_start,

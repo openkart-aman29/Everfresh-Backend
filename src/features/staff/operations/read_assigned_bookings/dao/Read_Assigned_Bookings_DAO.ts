@@ -35,7 +35,7 @@ export class ReadAssignedBookingsDAO {
             // In the actual booking module, this would query the bookings table.
             // For now, returning empty results as booking module doesn't exist yet.
 
-            staffLogger.warn('ReadAssignedBookingsDAO.getBookingsAssignedToStaff called but booking module not implemented', {
+            staffLogger.info('ReadAssignedBookingsDAO.getBookingsAssignedToStaff executing query', {
                 staffId,
                 companyId,
                 limit,
@@ -46,31 +46,116 @@ export class ReadAssignedBookingsDAO {
                 sortOrder
             });
 
-            // Placeholder query - would be replaced with actual booking query
-            const query = `
-                -- This is a placeholder. Actual implementation would be in booking module:
-                -- SELECT b.booking_id, b.scheduled_date, b.start_time, b.end_time, b.status_code,
-                --        bs.status_name, bs.is_terminal, bs.allow_transitions_to, bs.color_code,
-                --        s.service_name, c.customer_id,
-                --        u.first_name || ' ' || u.last_name AS customer_name, u.phone
-                -- FROM bookings b
-                -- JOIN booking_statuses bs ON bs.status_code = b.status_code
-                -- JOIN services s ON s.service_id = b.service_id
-                -- JOIN customers c ON c.customer_id = b.customer_id
-                -- JOIN users u ON u.user_id = c.user_id
-                -- WHERE b.staff_id = $1 AND b.company_id = $2 AND b.deleted_at IS NULL
-                -- AND ($3 IS NULL OR b.status_code = $3)
-                -- AND ($4 IS NULL OR b.scheduled_date >= $4)
-                -- AND ($5 IS NULL OR b.scheduled_date <= $5)
-                -- ORDER BY b.scheduled_date ${sortOrder.toUpperCase()}
-                -- LIMIT $6 OFFSET $7
+            // Build dynamic filters and parameters
+            const filters: string[] = ['b.staff_id = $1', 'b.company_id = $2', 'b.deleted_at IS NULL'];
+            const params: any[] = [staffId, companyId];
+            let idx = 3;
+
+            if (status) {
+                filters.push(`b.status = $${idx}`);
+                params.push(status);
+                idx++;
+            }
+
+            if (fromDate) {
+                filters.push(`b.scheduled_date >= $${idx}`);
+                params.push(fromDate);
+                idx++;
+            }
+
+            if (toDate) {
+                filters.push(`b.scheduled_date <= $${idx}`);
+                params.push(toDate);
+                idx++;
+            }
+
+            const whereClause = `WHERE ${filters.join(' AND ')}`;
+            const orderDir = (sortOrder || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+            // Query to fetch paginated booking rows
+            const dataQuery = `
+                SELECT
+                    b.booking_id,
+                    b.booking_number,
+                    b.status AS status_code,
+                    b.scheduled_date,
+                    b.scheduled_time_start,
+                    b.scheduled_time_end,
+                    b.service_location,
+                    b.total_amount,
+
+                    -- Customer Details
+                    cust.customer_id,
+                    CONCAT(cu.first_name, ' ', cu.last_name) AS customer_name,
+                    cu.phone AS customer_phone,
+                    cu.email AS customer_email,
+
+                    -- Service Details
+                    s.service_name,
+                    s.category AS service_category,
+
+                    -- Status details
+                    bs.status_name,
+                    bs.is_terminal,
+                    bs.allow_transitions_to,
+                    bs.color_code,
+
+                    -- Timestamps
+                    b.created_at,
+                    b.updated_at
+                FROM bookings b
+                LEFT JOIN booking_statuses bs ON bs.status_code = b.status
+                LEFT JOIN services s ON b.service_id = s.service_id
+                LEFT JOIN customers cust ON b.customer_id = cust.customer_id
+                LEFT JOIN users cu ON cust.user_id = cu.user_id
+                ${whereClause}
+                ORDER BY b.scheduled_date ${orderDir}, b.scheduled_time_start ${orderDir}
+                LIMIT $${idx} OFFSET $${idx + 1}
             `;
 
-            // For now, return empty results
-            return {
-                bookings: [],
-                totalCount: 0
-            };
+            // Params for data query (include limit & offset)
+            const dataParams = [...params, limit, offset];
+
+            const countQuery = `
+                SELECT COUNT(*)::int AS total
+                FROM bookings b
+                ${whereClause}
+            `;
+
+            // Execute queries
+            const [dataResult, countResult] = await Promise.all([
+                pool.query(dataQuery, dataParams),
+                pool.query(countQuery, params)
+            ]);
+
+            const rows = dataResult.rows;
+
+            // Map DB rows to AssignedBooking interface
+            const bookings: AssignedBooking[] = rows.map((r: any) => ({
+                bookingId: r.booking_id,
+                scheduledDate: r.scheduled_date,
+                startTime: r.scheduled_time_start,
+                endTime: r.scheduled_time_end,
+                serviceName: r.service_name,
+                customer: {
+                    customerId: r.customer_id,
+                    name: r.customer_name,
+                    phone: r.customer_phone
+                },
+                status: {
+                    code: r.status_code,
+                    name: r.status_name || null,
+                    isTerminal: Boolean(r.is_terminal),
+                    allowedTransitions: r.allow_transitions_to ? String(r.allow_transitions_to).split(',') : [],
+                    color: r.color_code || ''
+                }
+            }));
+
+            const totalCount = (countResult.rows[0]?.total ?? 0) as number;
+
+            staffLogger.info('ReadAssignedBookingsDAO.getBookingsAssignedToStaff completed', { bookings: bookings.length, totalCount });
+
+            return { bookings, totalCount };
 
         } catch (error) {
             staffLogger.error('Error fetching assigned bookings', { staffId, companyId, error });

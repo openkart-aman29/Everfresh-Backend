@@ -86,8 +86,17 @@ import { sendResponse } from '@/utilities/http/http-response/Standard_Response';
 import { StandardResponseInterface } from '@/utilities/global_interfaces/Standard_Response_Interface';
 import { getErrorStatus } from '@/utilities/http/constants/HTTP_Status_Codes';
 import { rotateAccessTokenService } from '@/modules/auth/operations/rotate_access_token/service/Rotate_Access_Token_Service';
+import { tokenRotationManager } from '@/modules/auth/manager/Token_Rotation_Manager';
 import { RefreshTokenResponseInterface } from '@/modules/auth/interface/Token_Interface';
-import { ENV } from '@/configurations/ENV_Configuration';
+import {
+    COOKIE_DOMAIN,
+    REFRESH_TOKEN_COOKIE_NAME,
+    REFRESH_TOKEN_COOKIE_PATH,
+    REFRESH_TOKEN_COOKIE_SECURE,
+    REFRESH_TOKEN_COOKIE_HTTP_ONLY,
+    REFRESH_TOKEN_COOKIE_SAME_SITE,
+    REFRESH_TOKEN_EXPIRATION_TIME
+} from '@/configurations/ENV_Configuration';
 
 /**
  * ============================================================================
@@ -152,13 +161,14 @@ export const rotateAccessTokenController = async (
            STEP 2: Extract device info and IP address for security tracking
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         
-        const deviceInfo = req.headers['user-agent'];
+        const rawDeviceInfo = req.headers['user-agent'] as string | undefined;
+        const deviceInfo = tokenRotationManager.extractDeviceInfo(rawDeviceInfo);
         const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() 
             || req.socket.remoteAddress 
             || 'unknown';
 
         authLogger.info('Request metadata extracted @ rotateAccessTokenController', {
-            deviceInfo: deviceInfo?.substring(0, 50) + '...',
+            deviceInfo,
             ipAddress
         });
 
@@ -189,13 +199,14 @@ export const rotateAccessTokenController = async (
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         
         if (serviceResponse.success && serviceResponse.data?.refreshToken) {
-            res.cookie('refreshToken', serviceResponse.data.refreshToken, {
-                httpOnly: true,              // Prevents JavaScript access (XSS protection)
-                secure: ENV.NODE_ENV === 'production',  // HTTPS only in production
-                sameSite: 'none',            // Allow cross-origin requests
-                maxAge: ENV.JWT_REFRESH_TOKEN_EXPIRATION * 1000, // 7 days in milliseconds
-                path: '/',                   // Available on all routes
-                domain: ENV.COOKIE_DOMAIN,   // Set domain for cookie
+            res.cookie(REFRESH_TOKEN_COOKIE_NAME, serviceResponse.data.refreshToken, {
+                httpOnly: REFRESH_TOKEN_COOKIE_HTTP_ONLY === 'true',
+                secure: REFRESH_TOKEN_COOKIE_SECURE === 'true' || (process.env.NODE_ENV === 'production'),
+                sameSite: (REFRESH_TOKEN_COOKIE_SAME_SITE as any) || 'none',
+                maxAge: REFRESH_TOKEN_EXPIRATION_TIME * 1000, // 7 days in milliseconds
+                // Use root path so cookie is sent to signout and other endpoints
+                path: '/',
+                domain: COOKIE_DOMAIN,   // Set domain for cookie
                 partitioned: true            // Enhanced privacy (Chrome 118+)
             });
 

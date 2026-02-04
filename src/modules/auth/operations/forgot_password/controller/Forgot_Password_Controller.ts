@@ -5,6 +5,7 @@ import { sendResponse } from '@/utilities/http/http-response/Standard_Response';
 import { StandardResponseInterface } from '@/utilities/global_interfaces/Standard_Response_Interface';
 import { getErrorStatus } from '@/utilities/http/constants/HTTP_Status_Codes';
 import { forgotPasswordZodSchema } from '@/modules/auth/operations/forgot_password/zod_schema/Forgot_Password_Zod_Schema';
+import { tokenRotationManager } from '@/modules/auth/manager/Token_Rotation_Manager';
 import { forgotPasswordService } from '@/modules/auth/operations/forgot_password/service/Forgot_Password_Service';
 
 export interface ForgotPasswordRequestInterface {
@@ -37,13 +38,14 @@ export const forgotPasswordController = async (
         
         authLogger.info('Request validation successful @ forgotPasswordController');
         
-        const deviceInfo = req.headers['user-agent'];
+        const rawDeviceInfo = req.headers['user-agent'] as string | undefined;
+        const deviceInfo = tokenRotationManager.extractDeviceInfo(rawDeviceInfo);
         const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() 
             || req.socket.remoteAddress 
             || 'unknown';
 
         authLogger.info('Request metadata extracted @ forgotPasswordController', {
-            deviceInfo: deviceInfo?.substring(0, 50) + '...',
+            deviceInfo,
             ipAddress
         });
         
