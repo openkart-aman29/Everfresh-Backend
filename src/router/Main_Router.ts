@@ -11,10 +11,8 @@ import staffRouter from '@/features/staff/router/Staff_Router';
 
 export const createMainRouter = (pool?: Pool) => {
   const mainRouter = Router();
-  // If a pool is provided, it may be used by feature modules. Most routers
-  // obtain the pool via `getDatabase()` internally, so allow creation even
-  // when the pool isn't initialized yet (DB may connect later).
-  const dbPool = pool || getDatabase();
+  // If a pool is provided, it may be used by feature modules.
+  // Most routers obtain the pool via `getDatabase()` internally.
 
   // Feature routes (bookingRouter is a Router instance)
   mainRouter.use('/bookings', bookingRouter);

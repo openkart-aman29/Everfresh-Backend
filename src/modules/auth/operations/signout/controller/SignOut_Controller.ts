@@ -4,6 +4,14 @@ import { sendResponse } from '@/utilities/http/http-response/Standard_Response';
 import { StandardResponseInterface } from '@/utilities/global_interfaces/Standard_Response_Interface';
 import { getErrorStatus } from '@/utilities/http/constants/HTTP_Status_Codes';
 import { signOutService } from '@/modules/auth/operations/signout/service/SignOut_Service';
+import {
+    REFRESH_TOKEN_COOKIE_NAME,
+    REFRESH_TOKEN_COOKIE_PATH,
+    REFRESH_TOKEN_COOKIE_SECURE,
+    REFRESH_TOKEN_COOKIE_HTTP_ONLY,
+    REFRESH_TOKEN_COOKIE_SAME_SITE,
+    COOKIE_DOMAIN
+} from '@/configurations/ENV_Configuration';
 
 interface RequestWithCookies extends Request {
     cookies: {
@@ -77,11 +85,14 @@ export const signOutController = async (req: RequestWithCookies, res: Response) 
         );
  // 3. If successful, clear the refresh token cookie
         if (serviceResponse.success) {
-            res.clearCookie('refreshToken', {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'none',
+            // Clear cookie using the same attributes it was set with
+            res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+                httpOnly: REFRESH_TOKEN_COOKIE_HTTP_ONLY === 'true',
+                secure: REFRESH_TOKEN_COOKIE_SECURE === 'true' || (process.env.NODE_ENV === 'production'),
+                sameSite: (REFRESH_TOKEN_COOKIE_SAME_SITE as any) || 'none',
+                // Must match the path used when setting the cookie
                 path: '/',
+                domain: COOKIE_DOMAIN,
             });
             authLogger.info('Refresh token cookie cleared @ signOutController');
         }

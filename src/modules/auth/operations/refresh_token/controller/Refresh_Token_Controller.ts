@@ -4,6 +4,7 @@ import { sendResponse } from '@/utilities/http/http-response/Standard_Response';
 import { StandardResponseInterface } from '@/utilities/global_interfaces/Standard_Response_Interface';
 import { getErrorStatus } from '@/utilities/http/constants/HTTP_Status_Codes';
 import { refreshTokenService } from '@/modules/auth/operations/refresh_token/service/Refresh_Token_Service';
+import { tokenRotationManager } from '@/modules/auth/manager/Token_Rotation_Manager';
 import { RefreshTokenRequestInterface } from '@/modules/auth/interface/Token_Interface';
 
 export const refreshTokenController = async (req: Request, res: Response) => {
@@ -27,7 +28,8 @@ export const refreshTokenController = async (req: Request, res: Response) => {
         }
 
         // Extract device info and IP
-        const deviceInfo = req.headers['user-agent'];
+        const rawDeviceInfo = req.headers['user-agent'] as string | undefined;
+        const deviceInfo = tokenRotationManager.extractDeviceInfo(rawDeviceInfo);
         const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress;
 
         // Call service

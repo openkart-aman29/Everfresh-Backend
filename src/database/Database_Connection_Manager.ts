@@ -8,9 +8,14 @@ let pool: Pool | null = null;
 
 export const connectDatabase = async (): Promise<boolean> => {
     try {
+        if (pool) {
+            databaseLogger.info('PostgreSQL pool already initialized');
+            return true;
+        }
+
         pool = new Pool({
-            host: ENV.DB_HOST,  //10.10.0.20
-            port: ENV.DB_PORT,  //5432
+            host: ENV.DB_HOST,
+            port: ENV.DB_PORT,
             database: ENV.DB_NAME,
             user: ENV.DB_USER,
             password: ENV.DB_PASSWORD,
