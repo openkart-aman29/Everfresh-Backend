@@ -82,8 +82,7 @@ export const ENV = cleanEnv(process.env, {
     REFRESH_TOKEN_COOKIE_HTTP_ONLY: str({ default: 'true' }),
     // For cross-origin admin dashboard, default to 'none' (set via .env if needed)
     REFRESH_TOKEN_COOKIE_SAME_SITE: str({ default: 'none' }),
-    COOKIE_DOMAIN: str({ default: 'www.admin.everfresh.ae' }),
-    // COOKIE_DOMAIN: str({ default: 'localhost' }),
+    COOKIE_DOMAIN: str({ default: 'localhost' }),
 
 
     // # =========================
