@@ -6,18 +6,24 @@ import { StaffResponse } from '@/features/staff/interfaces/Staff_Response.interf
  */
 export const mapStaffDBToResponse = (dbStaff: StaffWithUserDBInterface): StaffResponse => {
     return {
-        staffId: dbStaff.staff_id,
-        companyId: dbStaff.company_id,
-        userId: dbStaff.user_id,
-        email: dbStaff.email,
-        firstName: dbStaff.first_name,
-        lastName: dbStaff.last_name,
-        phone: dbStaff.phone,
-        isAvailable: dbStaff.is_available,
-        skills: dbStaff.skills,
-        createdAt: dbStaff.created_at.toISOString(),
-        updatedAt: dbStaff.updated_at.toISOString(),
-    };
+    staff_id: dbStaff.staff_id,
+    company_id: dbStaff.company_id,
+    user_id: dbStaff.user_id,
+    email: dbStaff.email,
+    first_name: dbStaff.first_name,
+    last_name: dbStaff.last_name,
+    phone: dbStaff.phone,
+    is_available: dbStaff.is_available,
+    skills: dbStaff.skills,
+    is_Active: dbStaff.is_active,
+    created_at: dbStaff.created_at,
+    updated_at: dbStaff.updated_at,
+    work_metrics: {
+        total_hours_worked: 0,
+        current_month_hours: 0
+    },
+    next_confirmed_booking: null
+};
 };
 
 /**

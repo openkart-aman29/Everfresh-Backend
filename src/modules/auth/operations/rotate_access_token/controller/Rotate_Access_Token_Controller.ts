@@ -207,7 +207,7 @@ export const rotateAccessTokenController = async (
                 // Use root path so cookie is sent to signout and other endpoints
                 path: '/',
                 domain: COOKIE_DOMAIN,   // Set domain for cookie
-                partitioned: true            // Enhanced privacy (Chrome 118+)
+                // partitioned: true            // Enhanced privacy (Chrome 118+)
             });
 
             authLogger.info('Refresh token cookie updated @ rotateAccessTokenController', {

@@ -517,7 +517,7 @@ class StaffSignUpDAO extends BaseAuthDAO {
                     is_available, skills,
                     created_at, updated_at
                 )
-                VALUES ($1,$2,$3,false,NULL,NOW(),NOW())
+                VALUES ($1,$2,$3,true,NULL,NOW(),NOW())
                 RETURNING *
                 `,
                 [
