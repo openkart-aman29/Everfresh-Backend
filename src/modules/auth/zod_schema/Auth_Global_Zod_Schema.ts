@@ -31,8 +31,7 @@ export const nameZodSchema = z
 // Phone validation (international format)
 export const phoneZodSchema = z
     .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format')
-    .optional();
+    .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format');
 
 // Date of birth validation
 export const dateOfBirthZodSchema = z

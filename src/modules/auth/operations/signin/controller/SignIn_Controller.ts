@@ -69,7 +69,7 @@ export const signInController = async (req: Request, res: Response) => {
                 // Use root path so cookie is sent to signout and other endpoints
                 path: '/',
                 domain: COOKIE_DOMAIN,
-                partitioned: true // Enhanced privacy (Chrome 118+)
+                // partitioned: true // Enhanced privacy (Chrome 118+)
             });
              const controllerResponse: StandardResponseInterface<Omit<SignInResponseInterface , 'refreshToken'>> = {
                 success: true,

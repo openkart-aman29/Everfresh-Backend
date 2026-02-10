@@ -14,4 +14,5 @@ export interface StaffWithUserDBInterface extends StaffDBInterface {
     first_name: string;
     last_name: string;
     phone: string | null;
+    is_active: boolean;
 }

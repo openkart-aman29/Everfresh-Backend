@@ -64,6 +64,39 @@ class CheckUserExistDAO extends BaseAuthDAO {
             return { exists: false };
         }
     }
+
+     async checkByPhone(
+        phone: string
+    ): Promise<{ exists: boolean; user_id?: string }> {
+        try {
+            const pool = this.getPool();
+            if (!pool) {
+                return { exists: false };
+            }
+
+            const query = `
+                SELECT user_id
+                FROM users
+                WHERE phone = $1
+                  AND deleted_at IS NULL
+            `;
+
+            const result = await pool.query(query, [phone]);
+
+
+            if (result.rows.length > 0) {
+                return {
+                    exists: true,
+                    user_id: result.rows[0].user_id
+                };
+            }
+
+            return { exists: false };
+        } catch (error) {
+            this.logError('checkByPhone', error);
+            return { exists: false };
+        }
+    }
 }
 
 export async function checkUserExistByEmail(
@@ -78,4 +111,12 @@ export async function checkUserExistById(
 ): Promise<{ exists: boolean; is_active?: boolean }> {
     const dao = new CheckUserExistDAO();
     return dao.checkById(userId);
+}
+
+
+export async function checkUserExistByPhone(
+    phone: string
+): Promise<{ exists: boolean; user_id?: string }> {
+    const dao = new CheckUserExistDAO();
+    return dao.checkByPhone(phone);
 }

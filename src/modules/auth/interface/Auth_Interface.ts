@@ -8,7 +8,7 @@ export interface CreateUserInterface {
     password_hash: string;
     first_name: string;
     last_name: string;
-    phone?: string;
+    phone: string;
     is_active: boolean;
     email_verified: boolean;
     phone_verified: boolean;
@@ -21,7 +21,7 @@ export interface UserResponseInterface {
     email: string;
     first_name: string;
     last_name: string;
-    phone?: string;
+    phone: string;
     is_active: boolean;
     email_verified: boolean;
     roles: string[];

@@ -32,8 +32,8 @@ export const updateStaffBodySchema = z.object({
     firstName: z.string().min(2, 'First name must be at least 2 characters').max(100, 'First name cannot exceed 100 characters').optional(),
     lastName: z.string().min(2, 'Last name must be at least 2 characters').max(100, 'Last name cannot exceed 100 characters').optional(),
     phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format').optional(),
-    isAvailable: z.boolean({
-        invalid_type_error: 'Availability must be a boolean value'
+    isActive: z.boolean({
+        invalid_type_error: 'Active status must be a boolean value'
     }).optional(),
     skills: z.array(z.string().min(1, 'Skill cannot be empty').max(50, 'Skill name too long'))
         .min(1, 'At least one skill required')

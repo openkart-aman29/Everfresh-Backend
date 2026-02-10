@@ -3,7 +3,7 @@ import { StandardResponseInterface } from '@/utilities/global_interfaces/Standar
 import { getErrorStatus } from '@/utilities/http/constants/HTTP_Status_Codes';
 import { generateULID } from '@/utilities/id_generator/ULID_Generator';
 import { passwordManager } from '@/modules/auth/manager/Password_Manager';
-import { checkUserExistByEmail } from '@/modules/auth/database/dao/Check_User_Exist_DAO';
+import { checkUserExistByEmail, checkUserExistByPhone } from '@/modules/auth/database/dao/Check_User_Exist_DAO';
 import { staffSignUpDAO } from '@/modules/auth/operations/signup/staff/dao/Staff_SignUp_DAO';
 import { StaffSignUpInput } from '@/modules/auth/operations/signup/staff/zod_schema/Staff_SignUp_Zod_Schema';
 import { UserResponseInterface } from '@/modules/auth/interface/Auth_Interface';
@@ -44,6 +44,20 @@ export const staffSignUpService = async (
             };
         }
 
+        /* 1️⃣ Phone uniqueness */
+        const phoneExists = await checkUserExistByPhone(input.phone);
+        if (phoneExists.exists) {
+            const status = 409;
+            return {
+                success: false,
+                message: 'PHONE_ALREADY_EXISTS',
+                status,
+                code: getErrorStatus(status),
+                data: null,
+                errors: [{ field: 'phone', message: 'Phone already registered' }]
+            };
+        }
+
         /* 2️⃣ Hash password */
         const passwordHash = await passwordManager.hashPassword(input.password);
 
@@ -57,7 +71,7 @@ export const staffSignUpService = async (
             password_hash: passwordHash,
             first_name: input.first_name,
             last_name: input.last_name,
-            phone: input.phone ?? undefined,
+            phone: input.phone,
             is_active: true,
             email_verified: false,
             phone_verified: false

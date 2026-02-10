@@ -6,7 +6,7 @@ interface UpdateStaffData {
     firstName?: string;
     lastName?: string;
     phone?: string;
-    isAvailable?: boolean;
+    isActive?: boolean;
     skills?: string[];
 }
 
@@ -37,8 +37,8 @@ export class UpdateStaffDAO {
             }
 
             // Update availability if provided
-            if (updates.isAvailable !== undefined) {
-                await this.staffDAO.updateStaffAvailability(staffId, companyId, updates.isAvailable);
+            if (updates.isActive !== undefined) {
+                await this.staffDAO.updateStaffStatus(staffId, companyId, updates.isActive);
             }
 
             // Update skills if provided

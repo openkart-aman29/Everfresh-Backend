@@ -68,10 +68,11 @@ export class StaffDAO {
                     u.email,
                     u.first_name,
                     u.last_name,
-                    u.phone
+                    u.phone,
+                    u.is_active
                 FROM staff s
                 JOIN users u ON s.user_id = u.user_id
-                WHERE s.company_id = $1
+                WHERE s.company_id = $1 
                   AND s.deleted_at IS NULL
                   AND u.deleted_at IS NULL
             `;
@@ -214,6 +215,33 @@ export class StaffDAO {
             return (result.rowCount ?? 0) > 0;
         } catch (error) {
             staffLogger.error('Error updating staff availability', { staffId, companyId, isAvailable, error });
+            throw error;
+        }
+    }
+
+     async updateStaffStatus(
+        staffId: string,
+        companyId: string,
+        isActive: boolean
+    ): Promise<boolean> {
+        try {
+            const pool = this.getPool();
+            const query = `
+                UPDATE users
+    SET is_active = $1,
+        updated_at = NOW()
+    WHERE user_id = (
+        SELECT user_id 
+        FROM staff 
+        WHERE staff_id = $2
+          AND company_id = $3
+          AND deleted_at IS NULL
+    )
+            `;
+            const result = await pool.query(query, [isActive, staffId, companyId]);
+            return (result.rowCount ?? 0) > 0;
+        } catch (error) {
+            staffLogger.error('Error updating staff status', { staffId, companyId, isActive, error });
             throw error;
         }
     }
