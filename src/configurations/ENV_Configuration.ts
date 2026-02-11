@@ -95,7 +95,7 @@ export const ENV = cleanEnv(process.env, {
     ALLOWED_ORIGINS: str({ default: 'http://admin.everfresh.ae, https://www.everfresh.ae, http://localhost:5173' }),
     RATE_LIMIT_WINDOW_MS: num({ default: 600000 }),
     RATE_LIMIT_MAX_REQUESTS: num({ default: 10000 }),
-    FRONTEND_URL: str({ default: 'https://www.everfresh.ae' }),
+    FRONTEND_URL: str({ default: 'http://localhost:5173/' }),
     // FRONTEND_URL: str({ default: 'https://localhost:5173/' }),
 
 

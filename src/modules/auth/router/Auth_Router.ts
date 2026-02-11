@@ -9,6 +9,7 @@ import { roleAuthorizationMiddleware } from '@/modules/auth/middleware/Role_Auth
 import { staffSignUpController } from '@/modules/auth/operations/signup/staff/controller/Staff_SignUp_Controller'
 import { rotateAccessTokenController } from '@/modules/auth/operations/rotate_access_token/controller/Rotate_Access_Token_Controller';
 import { forgotPasswordController } from '@/modules/auth/operations/forgot_password/controller/Forgot_Password_Controller';
+import { resetPasswordController } from '@/modules/auth/operations/reset_password/controller/Reset_Password_Controller';
 
 
 const authRouter = Router();
@@ -26,10 +27,10 @@ authRouter.post('/refresh-token', jwtVerificationMiddleware, refreshTokenControl
 authRouter.post("/rotate-token", rotateAccessTokenController);
 
 // TODO: Add more routes
-authRouter.post('/signup/staff',jwtVerificationMiddleware,roleAuthorizationMiddleware(['admin', 'superadmin']), staffSignUpController);
+authRouter.post('/signup/staff', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin', 'superadmin']), staffSignUpController);
 // authRouter.post('/signup/admin', adminSignUpController);
 authRouter.post('/forgot-password', forgotPasswordController);
-// authRouter.post('/reset-password', resetPasswordController);
+authRouter.post('/reset-password', resetPasswordController);
 // authRouter.post('/change-password', changePasswordController);
 
 export default authRouter;

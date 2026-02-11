@@ -69,7 +69,7 @@ export const forgotPasswordService = async (
            - User must not be soft-deleted (deleted_at IS NULL)
            - If not found, we still return success (anti-enumeration)
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const user = await checkUserExistsByIdentifier(email);
 
         if (!user) {
@@ -80,7 +80,7 @@ export const forgotPasswordService = async (
                
                Legitimate users will simply not receive an email
             */
-            
+
             authLogger.warn('User not found for password reset @ forgotPasswordService', {
                 email: email.substring(0, 3) + '***',
                 ipAddress
@@ -130,7 +130,7 @@ export const forgotPasswordService = async (
            - Issuer: everfresh-api
            - Audience: everfresh-client
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const resetToken = jwtManager.createAccessToken({
             user_id: user.user_id,
             company_id: user.company_id,
@@ -173,7 +173,7 @@ export const forgotPasswordService = async (
            - Expiry timestamp calculated (15 min from now)
            - Device info and IP address saved for audit trail
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const tokenSaved = await savePasswordResetToken({
             user_id: user.user_id,
             reset_token: resetToken,
@@ -215,9 +215,8 @@ export const forgotPasswordService = async (
            Example:
            https://everfresh.com/reset-password?token=eyJhbGciOiJSUzI1NiIs...
            ═══════════════════════════════════════════════════════════════════ */
-        
-        const resetLink = `${ENV.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
+        const resetLink = `${ENV.FRONTEND_URL}auth/reset-password?token=${resetToken}`;
         authLogger.info('Reset link generated @ forgotPasswordService', {
             userId: user.user_id,
             linkLength: resetLink.length
@@ -232,12 +231,12 @@ export const forgotPasswordService = async (
            - Expiry time (15 minutes)
            - Security warnings
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         try {
             await EmailBrevoService.sendTemplateEmail(
                 'forgot-password',
                 {
-                    userName: user.first_name,  // ✅ FIXED: was firstName
+                    firstName: user.first_name,
                     userEmail: user.email,
                     resetLink: resetLink,
                     expiryMinutes: 15
@@ -260,7 +259,7 @@ export const forgotPasswordService = async (
                ⚠️ DECISION: Return error to legitimate user
                They need to know the email wasn't sent
                ═══════════════════════════════════════════════════════════ */
-            
+
             authLogger.error('Failed to send password reset email @ forgotPasswordService', {
                 userId: user.user_id,
                 email: user.email.substring(0, 3) + '***',
@@ -291,7 +290,7 @@ export const forgotPasswordService = async (
            This message is shown to user regardless of internal state
            Prevents user enumeration attacks
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const status = 200;
         authLogger.info('Password reset process completed successfully @ forgotPasswordService', {
             userId: user.user_id,
@@ -303,7 +302,7 @@ export const forgotPasswordService = async (
             success: true,
             message: 'PASSWORD_RESET_EMAIL_SENT',
             status,
-            code:'SUCCESS',
+            code: 'SUCCESS',
             data: null,
             errors: []
         };
@@ -312,7 +311,7 @@ export const forgotPasswordService = async (
         /* ═══════════════════════════════════════════════════════════════════
            CATASTROPHIC ERROR HANDLING
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         authLogger.error('CRITICAL ERROR @ forgotPasswordService', error);
 
         const status = 500;

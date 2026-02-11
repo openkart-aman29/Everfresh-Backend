@@ -127,7 +127,7 @@ export const customerSignUpService = async (
                 await EmailBrevoService.sendTemplateEmail(
                     'sign-up-success',
                     {
-                        userName: userResponse.first_name,
+                        firstName: userResponse.first_name,
                         userEmail: userResponse.email,
                         signInDate: signInDate,
                         signInTime: signInTime,

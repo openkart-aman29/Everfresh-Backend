@@ -1,4 +1,5 @@
 import { bookingLogger } from '@/features/company/bookings/logger/Booking_Logger';
+import { sseManager } from '@/utilities/sse/SSE_Manager';
 import { StandardResponseInterface } from '@/utilities/global_interfaces/Standard_Response_Interface';
 import { getErrorStatus } from '@/utilities/http/constants/HTTP_Status_Codes';
 import { generateULID } from '@/utilities/id_generator/ULID_Generator';
@@ -44,13 +45,13 @@ export const createBookingService = async (
             scheduled_date: inputData.scheduled_date,
             staff_id: inputData.staff_id || 'unassigned'
         });
-        
+
         // ========== STEP 1: Validate Customer ==========
         const customerExists = await checkCustomerExistDAO(
             inputData.customer_id,
             inputData.company_id
         );
-        
+
         if (!customerExists.exists) {
             const status = 404;
             return {
@@ -62,13 +63,13 @@ export const createBookingService = async (
                 errors: [{ field: 'customer_id', message: 'Customer not found' }],
             };
         }
-        
+
         // ========== STEP 2: Validate Service ==========
         const serviceExists = await checkServiceExistDAO(
             inputData.service_id,
             inputData.company_id
         );
-        
+
         if (!serviceExists.exists) {
             const status = 404;
             return {
@@ -80,13 +81,13 @@ export const createBookingService = async (
                 errors: [{ field: 'service_id', message: 'Service not found' }],
             };
         }
-        
+
         // Get service details for pricing
         const serviceResult = await getServiceByIdDAO(
             inputData.service_id,
             inputData.company_id
         );
-        
+
         if (!serviceResult.success || !serviceResult.service) {
             const status = 500;
             return {
@@ -98,9 +99,9 @@ export const createBookingService = async (
                 errors: [{ field: 'service_id', message: 'Failed to fetch service details' }],
             };
         }
-        
+
         const service = serviceResult.service;
-        
+
         // Check if service requires quote
         if (service.requires_quote) {
             const status = 400;
@@ -113,20 +114,20 @@ export const createBookingService = async (
                 errors: [{ field: 'service_id', message: 'This service requires a manual quote' }],
             };
         }
-        
+
         // ========== STEP 3: Validate Staff (ONLY IF PROVIDED) ==========
         // 🔥 KEY CHANGE: Only validate staff if staff_id is explicitly provided
         // if (inputData.staff_id && inputData.staff_id.trim() !== '') {
         //     bookingLogger.info('Staff assignment requested, validating staff', {
         //         staff_id: inputData.staff_id
         //     });
-            
+
         //     // Check if staff exists and belongs to company
         //     const staffExists = await checkStaffExistDAO(
         //         inputData.staff_id,
         //         inputData.company_id
         //     );
-            
+
         //     if (!staffExists.exists) {
         //         const status = 404;
         //         return {
@@ -138,17 +139,17 @@ export const createBookingService = async (
         //             errors: [{ field: 'staff_id', message: 'Staff not found or unavailable' }],
         //         };
         //     }
-            
+
         //     // Check staff availability for the scheduled time
         //     const endTime = inputData.scheduled_time_end || inputData.scheduled_time_start;
-            
+
         //     const isAvailable = await checkStaffAvailability(
         //         inputData.staff_id,
         //         inputData.scheduled_date,
         //         inputData.scheduled_time_start,
         //         endTime
         //     );
-            
+
         //     if (!isAvailable) {
         //         const status = 409;
         //         return {
@@ -163,7 +164,7 @@ export const createBookingService = async (
         //             }],
         //         };
         //     }
-            
+
         //     bookingLogger.info('Staff availability confirmed', {
         //         staff_id: inputData.staff_id,
         //         scheduled_date: inputData.scheduled_date,
@@ -173,15 +174,15 @@ export const createBookingService = async (
         //     bookingLogger.info('Booking created without staff assignment - will be assigned later');
         // }
 
-         let finalStaffId: string | null = null;
-        
+        let finalStaffId: string | null = null;
+
         if (inputData.staff_id && inputData.staff_id.trim() !== '') {
             // Manual staff assignment (existing logic)
             const staffExists = await checkStaffExistDAO(
                 inputData.staff_id,
                 inputData.company_id
             );
-            
+
             if (!staffExists.exists) {
                 const status = 404;
                 return {
@@ -193,7 +194,7 @@ export const createBookingService = async (
                     errors: [{ field: 'staff_id', message: 'Staff not found or unavailable' }],
                 };
             }
-            
+
             const endTime = inputData.scheduled_time_end || inputData.scheduled_time_start;
             const isAvailable = await checkStaffAvailability(
                 inputData.staff_id,
@@ -201,7 +202,7 @@ export const createBookingService = async (
                 inputData.scheduled_time_start,
                 endTime
             );
-            
+
             if (!isAvailable) {
                 const status = 409;
                 return {
@@ -210,20 +211,20 @@ export const createBookingService = async (
                     status,
                     code: getErrorStatus(status),
                     data: null,
-                    errors: [{ 
-                        field: 'staff_id', 
-                        message: 'Staff already has a booking during this time slot' 
+                    errors: [{
+                        field: 'staff_id',
+                        message: 'Staff already has a booking during this time slot'
                     }],
                 };
             }
-            
+
             finalStaffId = inputData.staff_id;
             bookingLogger.info('Staff manually assigned', { staff_id: finalStaffId });
-            
+
         } else {
             // 🔥 AUTO-ASSIGN STAFF
             bookingLogger.info('Attempting automatic staff assignment');
-            
+
             const assignmentResult = await autoAssignStaff(
                 inputData.company_id,
                 inputData.service_id,
@@ -231,7 +232,7 @@ export const createBookingService = async (
                 inputData.scheduled_time_start,
                 inputData.scheduled_time_end || null
             );
-            
+
             if (assignmentResult.assigned && assignmentResult.staff_id) {
                 finalStaffId = assignmentResult.staff_id;
                 bookingLogger.info('Staff automatically assigned', {
@@ -245,17 +246,17 @@ export const createBookingService = async (
                 // finalStaffId remains null - booking will be created without staff
             }
         }
-        
+
         // ========== STEP 4: Fetch Addons (if provided) ==========
         let addons: any[] = [];
         let addonsTotal = 0;
-        
+
         if (inputData.addon_ids && inputData.addon_ids.length > 0) {
             const addonsResult = await getAddonsDAO(
                 inputData.addon_ids,
                 inputData.company_id
             );
-            
+
             if (addonsResult.success && addonsResult.addons) {
                 addons = addonsResult.addons;
                 addonsTotal = addons.reduce((sum, addon) => sum + addon.price, 0);
@@ -265,11 +266,11 @@ export const createBookingService = async (
                 });
             }
         }
-        
+
         // ========== STEP 5: Calculate Pricing ==========
         const quantity = inputData.quantity || 1;
         const servicePrice = service.price;
-        
+
         const {
             subtotal,
             taxAmount,
@@ -281,7 +282,7 @@ export const createBookingService = async (
             discountAmount: inputData.discount_amount || 0,
             taxRate: 0.05 // 5% VAT (fetch from company settings in real implementation)
         });
-        
+
         bookingLogger.info('Booking pricing calculated', {
             service_price: servicePrice,
             quantity,
@@ -290,10 +291,10 @@ export const createBookingService = async (
             tax: taxAmount,
             total: totalAmount
         });
-        
+
         // ========== STEP 6: Generate Booking ID ==========
         const bookingId = generateULID();
-        
+
         // ========== STEP 7: Prepare Booking Data ==========
         const bookingData: BookingInterface = {
             booking_id: bookingId,
@@ -323,10 +324,10 @@ export const createBookingService = async (
             updated_at: new Date(),
             deleted_at: null
         };
-        
+
         // ========== STEP 8: Create Booking in Database ==========
         const createResult = await createBookingDAO(bookingData);
-        
+
         if (!createResult.success || !createResult.booking) {
             const status = 500;
             return {
@@ -338,18 +339,18 @@ export const createBookingService = async (
                 errors: [{ field: 'database', message: 'Failed to create booking in database' }],
             };
         }
-        
+
         // ========== STEP 9: Create Booking Addons (if any) ==========
         if (addons.length > 0) {
             const addonsCreated = await createBookingAddonsDAO(bookingId, addons);
-            
+
             if (!addonsCreated) {
                 bookingLogger.warn('Failed to create some booking addons', {
                     booking_id: bookingId
                 });
             }
         }
-        
+
         // ========== STEP 10: Success Response ==========
         bookingLogger.info('Booking created successfully', {
             booking_id: bookingId,
@@ -357,7 +358,20 @@ export const createBookingService = async (
             total_amount: totalAmount,
             staff_assigned: !!inputData.staff_id
         });
-        
+
+        // Notify staff of new booking via SSE
+        sseManager.broadcast('booking_created', {
+            booking_id: bookingId,
+            booking_number: createResult.booking.booking_number,
+            customer_id: inputData.customer_id,
+            service_id: inputData.service_id,
+            staff_id: finalStaffId,
+            scheduled_date: inputData.scheduled_date,
+            scheduled_time_start: inputData.scheduled_time_start,
+            status: 'pending',
+            created_at: new Date()
+        }, inputData.company_id);
+
         const status = 201;
         return {
             success: true,
@@ -367,10 +381,10 @@ export const createBookingService = async (
             data: createResult.booking,
             errors: [],
         };
-        
+
     } catch (error) {
         bookingLogger.error('Error in create booking service', error);
-        
+
         const status = 500;
         return {
             success: false,

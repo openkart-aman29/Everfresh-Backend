@@ -1,4 +1,4 @@
-import { BaseAuthDAO } from './Base_Auth_DAO';
+import { BaseAuthDAO } from '@/modules/auth/database/dao/Base_Auth_DAO';
 
 class CheckUserExistDAO extends BaseAuthDAO {
     async checkByEmail(
@@ -65,7 +65,7 @@ class CheckUserExistDAO extends BaseAuthDAO {
         }
     }
 
-     async checkByPhone(
+    async checkByPhone(
         phone: string
     ): Promise<{ exists: boolean; user_id?: string }> {
         try {
