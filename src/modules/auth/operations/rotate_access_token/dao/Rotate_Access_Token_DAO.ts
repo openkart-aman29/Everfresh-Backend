@@ -100,7 +100,7 @@ class RotateAccessTokenDAO extends BaseAuthDAO {
             }
 
             const tokenData = result.rows[0];
-            
+
             authLogger.info('Refresh token fetched successfully @ DAO', {
                 tokenId: tokenData.token_id,
                 userId: tokenData.user_id

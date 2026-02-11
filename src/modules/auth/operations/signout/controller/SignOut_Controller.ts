@@ -37,10 +37,10 @@ export const signOutController = async (req: RequestWithCookies, res: Response) 
             return sendResponse(res, response);
         }
 
-         // 1. Extract refresh token from cookies
-        const refreshToken = req.cookies?.refreshToken;
+        // 1. Extract refresh token from cookies
+        const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
 
-          if (!refreshToken) {
+        if (!refreshToken) {
             const status = 400;
             const response: StandardResponseInterface<null> = {
                 success: false,
@@ -79,11 +79,10 @@ export const signOutController = async (req: RequestWithCookies, res: Response) 
         // }
 
         // Call service
-        const serviceResponse = await signOutService( refreshToken
-            // validationResult.data,
-            // req.user.user_id
+        const serviceResponse = await signOutService(
+            refreshToken
         );
- // 3. If successful, clear the refresh token cookie
+        // 3. If successful, clear the refresh token cookie
         if (serviceResponse.success) {
             // Clear cookie using the same attributes it was set with
             res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {

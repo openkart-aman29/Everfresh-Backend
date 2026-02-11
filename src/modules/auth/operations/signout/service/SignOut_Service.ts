@@ -5,7 +5,7 @@ import { tokenRotationManager } from '@/modules/auth/manager/Token_Rotation_Mana
 import { revokeRefreshToken } from '@/modules/auth/operations/signout/dao/SignOut_DAO';
 
 export const signOutService = async (
-   refreshToken: string
+    refreshToken: string
 ): Promise<StandardResponseInterface<null>> => {
     try {
         authLogger.info("Signing out user - signOutService", { refreshToken: refreshToken.substring(0, 10) + '...' });

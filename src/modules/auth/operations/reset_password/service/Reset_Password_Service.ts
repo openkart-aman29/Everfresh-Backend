@@ -90,17 +90,17 @@ export const resetPasswordService = async (
            - Expired token → User took too long
            - Malformed token → Invalid format
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         let tokenPayload: ResetTokenPayload;
-        
+
         try {
             authLogger.info('Verifying JWT token @ resetPasswordService');
-            
+
             tokenPayload = jwtManager.verifyAccessToken(resetToken) as ResetTokenPayload;
-            
+
             if (!tokenPayload) {
                 authLogger.error('JWT verification returned null @ resetPasswordService');
-                
+
                 const status = 401;
                 return {
                     success: false,
@@ -157,9 +157,9 @@ export const resetPasswordService = async (
              exp: 1234568790
            }
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const userId = tokenPayload.user_id;
-        
+
         if (!userId) {
             authLogger.error('Missing user_id in token payload @ resetPasswordService');
 
@@ -191,7 +191,7 @@ export const resetPasswordService = async (
            - We hash the token here to compare with stored hash
            - Same hashing algorithm used in forgot password flow
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const providedTokenHash = crypto
             .createHash('sha256')
             .update(resetToken)
@@ -217,7 +217,7 @@ export const resetPasswordService = async (
            - User is active (is_active = TRUE)
            - User not deleted (deleted_at IS NULL)
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const storedTokenData = await getPasswordResetToken(userId);
 
         if (!storedTokenData) {
@@ -254,9 +254,9 @@ export const resetPasswordService = async (
            - Prevents unauthorized password resets
            - Uses constant-time comparison (crypto.timingSafeEqual)
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const storedTokenHash = storedTokenData.reset_token_hash;
-        
+
         // Convert hex strings to buffers for timing-safe comparison
         const providedBuffer = Buffer.from(providedTokenHash, 'hex');
         const storedBuffer = Buffer.from(storedTokenHash, 'hex');
@@ -306,7 +306,7 @@ export const resetPasswordService = async (
            This should already be validated by Zod schema, but we check again
            as an additional security layer
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         if (newPassword !== confirmPassword) {
             authLogger.error('Password mismatch @ resetPasswordService', {
                 userId
@@ -338,7 +338,7 @@ export const resetPasswordService = async (
            4. Update password_hash in users table
            5. Return user email and name for confirmation email
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         authLogger.info('Calling DAO to update password @ resetPasswordService', {
             userId
         });
@@ -388,7 +388,7 @@ export const resetPasswordService = async (
            
            Even if revoking fails, password has been changed successfully
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         authLogger.info('Revoking reset token @ resetPasswordService', {
             userId
         });
@@ -420,7 +420,7 @@ export const resetPasswordService = async (
            If email fails, we don't fail the entire operation
            Password has been changed successfully
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         if (resetResult.userEmail && resetResult.userName) {
             try {
                 authLogger.info('Sending password changed confirmation email @ resetPasswordService', {
@@ -477,7 +477,7 @@ export const resetPasswordService = async (
            User can now login with new password
            Old reset link is invalid and cannot be reused
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         const status = 200;
         authLogger.info('Password reset completed successfully @ resetPasswordService', {
             userId,
@@ -488,7 +488,7 @@ export const resetPasswordService = async (
             success: true,
             message: 'PASSWORD_RESET_SUCCESSFULLY',
             status,
-            code: getErrorStatus(status),
+            code: 'SUCCESS',
             data: null,
             errors: []
         };
@@ -500,7 +500,7 @@ export const resetPasswordService = async (
            This should rarely happen if all layers handle errors properly
            Log full error details for debugging
            ═══════════════════════════════════════════════════════════════════ */
-        
+
         authLogger.error('CRITICAL ERROR @ resetPasswordService', error);
 
         const status = 500;

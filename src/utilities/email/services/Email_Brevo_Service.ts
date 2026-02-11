@@ -11,7 +11,7 @@ class EmailBrevoService {
   constructor() {
     const apiKey = (EMAIL_CONFIGURATION as any).brevoApiKey || '';
     this.from = EMAIL_CONFIGURATION.from;
-    
+
     if (!apiKey) {
       emailLogger.error('Brevo API key is not configured.');
     } else {
@@ -28,10 +28,10 @@ class EmailBrevoService {
       }
 
       const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-      
+
       // Set recipients
       if (Array.isArray(options.to)) {
-        sendSmtpEmail.to = options.to.map((recipient) => 
+        sendSmtpEmail.to = options.to.map((recipient) =>
           typeof recipient === 'string' ? { email: recipient } : recipient
         );
       } else {
@@ -47,8 +47,8 @@ class EmailBrevoService {
         if (validAttachments.length > 0) {
           sendSmtpEmail.attachment = validAttachments.map(att => ({
             name: att.filename || 'attachment',
-            content: typeof att.content === 'string' 
-              ? Buffer.from(att.content).toString('base64') 
+            content: typeof att.content === 'string'
+              ? Buffer.from(att.content).toString('base64')
               : (att.content as Buffer).toString('base64')
           }));
         }

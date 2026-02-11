@@ -19,7 +19,6 @@ class SignOutDAO extends BaseAuthDAO {
             const result = await pool.query(query, [hashedToken]);
 
             this.logInfo('revokeRefreshToken', {
-                
                 revoked: (result.rowCount ?? 0) > 0
             });
 

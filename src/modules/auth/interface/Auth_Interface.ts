@@ -1,5 +1,5 @@
 import { RecordIDInterface } from '@/utilities/global_interfaces/Record_ID_Interface';
-import { AccessTokenRequestInterface, RefreshTokenRequestInterface } from './Token_Interface';
+import { AccessTokenRequestInterface, RefreshTokenRequestInterface } from '@/modules/auth/interface/Token_Interface';
 // User creation interface
 export interface CreateUserInterface {
     user_id: string;
@@ -53,4 +53,4 @@ export interface TokenPayloadInterface {
 }
 
 
-export interface EnrichedAuthInterface extends AccessTokenRequestInterface, RefreshTokenRequestInterface, CreateUserInterface{}
+export interface EnrichedAuthInterface extends AccessTokenRequestInterface, RefreshTokenRequestInterface, CreateUserInterface { }

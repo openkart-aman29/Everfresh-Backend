@@ -1,5 +1,5 @@
 // src/features/bookings/database/dao/Check_Booking_Exist_DAO.ts
-import { BaseBookingDAO } from './Base_Booking_DAO';
+import { BaseBookingDAO } from '@/features/company/bookings/database/dao/Base_Booking_DAO';
 
 /**
  * DAO for checking booking existence
@@ -32,7 +32,7 @@ class CheckBookingExistDAO extends BaseBookingDAO {
             `;
 
             const result = await pool.query(query, [bookingId, companyId]);
-            
+
             return {
                 exists: result.rows[0]?.exists || false
             };
@@ -70,7 +70,7 @@ class CheckBookingExistDAO extends BaseBookingDAO {
             `;
 
             const result = await pool.query(query, [bookingNumber, companyId]);
-            
+
             return {
                 exists: result.rows[0]?.exists || false
             };

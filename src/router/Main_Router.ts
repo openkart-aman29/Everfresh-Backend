@@ -9,6 +9,8 @@ import staffRouter from '@/features/staff/router/Staff_Router';
 // import serviceRouter from '@/features/services/router/Service_Router';
 // import paymentRouter from '@/features/payments/router/Payment_Router';
 
+import sseRouter from '@/features/company/bookings/router/SSE_Router';
+
 export const createMainRouter = (pool?: Pool) => {
   const mainRouter = Router();
   // If a pool is provided, it may be used by feature modules.
@@ -16,6 +18,7 @@ export const createMainRouter = (pool?: Pool) => {
 
   // Feature routes (bookingRouter is a Router instance)
   mainRouter.use('/bookings', bookingRouter);
+  mainRouter.use('/sse', sseRouter);
   mainRouter.use('/auth', authRouter);
   mainRouter.use('/customers', customerRouter);
   mainRouter.use('/staff', staffRouter);
