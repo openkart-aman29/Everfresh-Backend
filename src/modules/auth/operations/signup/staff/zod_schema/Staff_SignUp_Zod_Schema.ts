@@ -14,8 +14,9 @@ export const staffSignUpZodSchema = z.object({
     first_name: nameZodSchema,
     last_name: nameZodSchema,
     phone: phoneZodSchema,
-    role_code:z.enum(['admin', 'staff']).default('staff')
-    // address: z.string().max(500).optional(),
+    role_code: z.literal('staff', {
+        errorMap: () => ({ message: 'Role code must be "staff"' })
+    })// address: z.string().max(500).optional(),
     // preferred_contact: z.enum(['email', 'phone', 'sms', 'whatsapp']).default('email')
 });
 

@@ -1,5 +1,6 @@
 # Real-Time Events (SSE) Documentation
 
+
 ## Overview
 The EverFresh Backend uses Server-Sent Events (SSE) to push real-time updates to connected clients. This is primarily used to notify staff members of new bookings without requiring a manual page refresh.
 

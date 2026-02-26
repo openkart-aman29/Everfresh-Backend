@@ -12,7 +12,7 @@ import { readAssignedBookingsController } from '@/features/staff/operations/read
 import { jwtVerificationMiddleware } from '@/modules/auth/middleware/JWT_Verification_Middleware';
 import { permissionAuthorizationMiddleware } from '@/modules/auth/middleware/Role_Authorization_Middleware';
 import { rateLimitMiddleware } from '@/utilities/middleware/Rate_Limit_Middleware';
-
+import { roleAuthorizationMiddleware } from '@/modules/auth/middleware/Role_Authorization_Middleware';
 const staffRouter = Router();
 
 // Apply rate limiting to all routes
@@ -22,11 +22,11 @@ staffRouter.use(rateLimitMiddleware);
 const pool = getDatabase();
 
 // Staff routes - all require authentication
-staffRouter.get('/read/:staffId',jwtVerificationMiddleware, readStaffController);
-staffRouter.get('/read-all', jwtVerificationMiddleware, readAllStaffController);
-staffRouter.patch('/update/:staffId', jwtVerificationMiddleware, updateStaffController);
-staffRouter.delete('/delete/:staffId', jwtVerificationMiddleware, deleteStaffController);
-staffRouter.get('/read-assigned-bookings/:staffId', jwtVerificationMiddleware,readAssignedBookingsController);
+staffRouter.get('/read/:staffId', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin']), readStaffController);
+staffRouter.get('/read-all', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin']), readAllStaffController);
+staffRouter.patch('/update/:staffId', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin']), updateStaffController);
+staffRouter.delete('/delete/:staffId', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin']), deleteStaffController);
+staffRouter.get('/read-assigned-bookings/:staffId', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin']), readAssignedBookingsController);
 
 
 export default staffRouter;

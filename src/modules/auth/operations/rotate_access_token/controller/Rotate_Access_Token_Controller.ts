@@ -130,8 +130,8 @@ export const rotateAccessTokenController = async (
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
            STEP 1: Extract refresh token from HttpOnly cookie
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        
-        const refreshToken = req.cookies?.refreshToken;
+
+        const refreshToken = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
 
         if (!refreshToken) {
             const status = 401;
@@ -160,11 +160,11 @@ export const rotateAccessTokenController = async (
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
            STEP 2: Extract device info and IP address for security tracking
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        
+
         const rawDeviceInfo = req.headers['user-agent'] as string | undefined;
         const deviceInfo = tokenRotationManager.extractDeviceInfo(rawDeviceInfo);
-        const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() 
-            || req.socket.remoteAddress 
+        const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim()
+            || req.socket.remoteAddress
             || 'unknown';
 
         authLogger.info('Request metadata extracted @ rotateAccessTokenController', {
@@ -175,8 +175,8 @@ export const rotateAccessTokenController = async (
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
            STEP 3: Call service layer for token rotation
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        
-        const serviceResponse: StandardResponseInterface<RefreshTokenResponseInterface | null> = 
+
+        const serviceResponse: StandardResponseInterface<RefreshTokenResponseInterface | null> =
             await rotateAccessTokenService({
                 refreshToken,
                 deviceInfo,
@@ -197,7 +197,7 @@ export const rotateAccessTokenController = async (
            - If a token is stolen, it can only be used once
            - Legitimate user will get a new token, attacker will be blocked
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        
+
         if (serviceResponse.success && serviceResponse.data?.refreshToken) {
             res.cookie(REFRESH_TOKEN_COOKIE_NAME, serviceResponse.data.refreshToken, {
                 httpOnly: REFRESH_TOKEN_COOKIE_HTTP_ONLY === 'true',
@@ -218,7 +218,7 @@ export const rotateAccessTokenController = async (
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
            STEP 5: Prepare and send controller response
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        
+
         const controllerResponse: StandardResponseInterface<RefreshTokenResponseInterface | null> = {
             success: serviceResponse.success,
             message: serviceResponse.message,
@@ -241,7 +241,7 @@ export const rotateAccessTokenController = async (
            - This should rarely happen if service layer handles errors properly
            - Log full error details for debugging
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-        
+
         authLogger.error('CRITICAL ERROR @ rotateAccessTokenController', error);
 
         const status = 500;

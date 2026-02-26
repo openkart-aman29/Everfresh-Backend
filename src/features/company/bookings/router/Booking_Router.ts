@@ -35,10 +35,10 @@ bookingRouter.get('/read/:booking_id', jwtVerificationMiddleware, readBookingCon
 bookingRouter.post('/cancel/:booking_id', jwtVerificationMiddleware, cancelBookingController);
 
 // Staff/Admin routes
-bookingRouter.post('/reschedule/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin', 'superadmin']), rescheduleBookingController);
-bookingRouter.get('/read-all', jwtVerificationMiddleware,roleAuthorizationMiddleware(['staff', 'admin', 'superadmin']),readAllBookingsController);
+bookingRouter.post('/reschedule/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin']), rescheduleBookingController);
+bookingRouter.get('/read-all', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin']), readAllBookingsController);
 // bookingRouter.patch('/update/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin', 'superadmin']), updateBookingController);
-bookingRouter.patch('/assign-staff/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin', 'superadmin']), assignStaffController);
+bookingRouter.patch('/assign-staff/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin']), assignStaffController);
 // bookingRouter.patch('/update-status/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin', 'superadmin']), updateStatusController);
 
 // // Admin only

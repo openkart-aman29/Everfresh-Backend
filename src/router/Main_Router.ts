@@ -5,7 +5,8 @@ import { getDatabase } from '@/database/Database_Connection_Manager';
 import authRouter from '@/modules/auth/router/Auth_Router';
 import customerRouter from '@/features/customers/router/Customer_Router';
 import staffRouter from '@/features/staff/router/Staff_Router';
-// import companyRouter from '@/features/companies/router/Company_Router';
+import adminRouter from '@/features/admins/router/Admin_Router';
+import companyRouter from '@/features/company/companies/router/Company_Router';
 // import serviceRouter from '@/features/services/router/Service_Router';
 // import paymentRouter from '@/features/payments/router/Payment_Router';
 
@@ -22,7 +23,8 @@ export const createMainRouter = (pool?: Pool) => {
   mainRouter.use('/auth', authRouter);
   mainRouter.use('/customers', customerRouter);
   mainRouter.use('/staff', staffRouter);
-  // mainRouter.use('/companies', companyRouter);
+  mainRouter.use('/admin', adminRouter);
+  mainRouter.use('/companies', companyRouter);
   // mainRouter.use('/services', serviceRouter);
   // mainRouter.use('/payments', paymentRouter);
 

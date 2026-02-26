@@ -1,5 +1,7 @@
 # Dependency directories
 node_modules/
+docs/
+*.md
 
 # Build outputs
 dist/

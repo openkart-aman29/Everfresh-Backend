@@ -132,7 +132,7 @@ export const signInService = async (
             !roles.includes('staff') &&
             !roles.includes('customer')
         ) {
-            domain_id = null;
+            domain_id = user.admin_id || null;
             domain_type = 'admin';
         }
 

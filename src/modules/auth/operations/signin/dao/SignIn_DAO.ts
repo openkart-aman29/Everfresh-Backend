@@ -13,6 +13,7 @@ interface UserWithRoles {
     roles: string[];
     customer_id?: string | null;
     staff_id?: string | null;
+    admin_id?: string | null;
 }
 
 class SignInDAO extends BaseAuthDAO {
@@ -37,6 +38,7 @@ SELECT
                     u.email_verified,
 					c.customer_id,
                     s.staff_id,
+                    a.admin_id,
                     ARRAY_AGG(r.role_code) as roles
                 FROM users u
                 LEFT JOIN user_roles ur ON u.user_id = ur.user_id
@@ -47,11 +49,15 @@ SELECT
                 LEFT JOIN staff s
                     ON s.user_id = u.user_id
                 AND s.deleted_at IS NULL
+                LEFT JOIN admins a
+                    ON a.user_id = u.user_id
+                AND a.deleted_at IS NULL
                 WHERE u.email = $1
 				AND u.deleted_at IS NULL
                 GROUP BY  u.user_id,
                         c.customer_id,
-                        s.staff_id;
+                        s.staff_id,
+                        a.admin_id;
 
             `;
 
