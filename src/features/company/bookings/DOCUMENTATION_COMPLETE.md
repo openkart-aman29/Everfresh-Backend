@@ -2,6 +2,7 @@
 
 ## Overview
 
+
 The bookings module manages the full lifecycle of service bookings for a company: creation, scheduling, staff assignment, status updates, cancellations, rescheduling, addons and soft-deletion. It follows a layered pattern: HTTP Router → Controller → Service → DAO → Database, with Zod for validation and Winston-based logging for observability.
 
 ## Purpose of this document

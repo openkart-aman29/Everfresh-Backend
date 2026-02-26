@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { ulidZodSchema } from '@/utilities/global_schemas/ULID_Zod_Schema';
 
+import {
+    nameZodSchema,
+    phoneZodSchema
+} from '@/modules/auth/zod_schema/Auth_Global_Zod_Schema';
+
+
 // ULID validation for staff ID
 export const staffIdParamSchema = z.object({
     staffId: ulidZodSchema,
@@ -22,16 +28,16 @@ export const readAllStaffQuerySchema = z.object({
 
 // Update staff profile body schema
 export const updateStaffProfileSchema = z.object({
-    firstName: z.string().min(2, 'First name must be at least 2 characters').max(100, 'First name cannot exceed 100 characters').optional(),
-    lastName: z.string().min(2, 'Last name must be at least 2 characters').max(100, 'Last name cannot exceed 100 characters').optional(),
-    phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format').optional(),
+    firstName: nameZodSchema,
+    lastName: nameZodSchema,
+    phone: phoneZodSchema,
 }).refine(data => Object.keys(data).length > 0, 'At least one field must be provided for update');
 
 // Combined update staff body schema
 export const updateStaffBodySchema = z.object({
-    firstName: z.string().min(2, 'First name must be at least 2 characters').max(100, 'First name cannot exceed 100 characters').optional(),
-    lastName: z.string().min(2, 'Last name must be at least 2 characters').max(100, 'Last name cannot exceed 100 characters').optional(),
-    phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format').optional(),
+    firstName: nameZodSchema,
+    lastName: nameZodSchema,
+    phone: phoneZodSchema,
     isActive: z.boolean({
         invalid_type_error: 'Active status must be a boolean value'
     }).optional(),

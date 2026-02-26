@@ -7,10 +7,10 @@ import { authLogger } from '@/modules/auth/logger/Auth_Logger';
 const sseRouter = Router();
 
 // Endpoint to establish SSE connection
-// Only authenticated staff/admin can connect
+// Only authenticated staff/admin/super_admin can connect
 sseRouter.get('/events',
     jwtVerificationMiddleware,
-    roleAuthorizationMiddleware(['staff', 'admin', 'superadmin']),
+    roleAuthorizationMiddleware(['staff', 'admin', 'super_admin']),
     (req: Request, res: Response) => {
         const user = req.user;
 
