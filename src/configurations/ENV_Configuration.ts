@@ -129,7 +129,7 @@ export const ENV = cleanEnv(process.env, {
     // # =========================
     // # LOGGING
     // # =========================
-    LOG_RETENTION_DAYS: num({ default: 30 }),
+    LOG_RETENTION_DAYS: num({ default: 2 }),
     LOG_CONSOLE_PRODUCTION: bool({ default: false }),
     TIMEZONE: str({ default: 'UTC' }),
 });
