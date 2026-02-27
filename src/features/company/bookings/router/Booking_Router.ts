@@ -24,10 +24,8 @@ const bookingRouter = Router();
 // Apply rate limiting to all routes
 bookingRouter.use(rateLimitMiddleware);
 
-// Instantiate controllers that are class-based (pass pool)
-const pool = getDatabase();
-const deleteBookingController = new DeleteBookingController(pool!);
-const addAddonController = new AddAddonController(pool!);
+// Instantiate controllers that are class-based inside the route handler
+// so they only get the pool when the route is actually called.
 
 // Public routes
 bookingRouter.post('/create', jwtVerificationMiddleware, createBookingController);
@@ -42,9 +40,16 @@ bookingRouter.patch('/assign-staff/:booking_id', jwtVerificationMiddleware, role
 // bookingRouter.patch('/update-status/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin', 'superadmin']), updateStatusController);
 
 // // Admin only
-// bookingRouter.delete('/delete/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin', 'superadmin']), (req: Request, res: Response, next: NextFunction) => deleteBookingController.deleteBooking(req, res).catch(next));
-
+// bookingRouter.delete('/delete/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['admin', 'superadmin']), (req: Request, res: Response, next: NextFunction) => {
+//     const pool = getDatabase();
+//     const controller = new DeleteBookingController(pool!);
+//     return controller.deleteBooking(req, res).catch(next);
+// });
 // // Addon route (example)
-// bookingRouter.post('/add-addon/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin', 'superadmin']), (req: Request, res: Response, next: NextFunction) => addAddonController.addAddon(req, res).catch(next));
+// bookingRouter.post('/add-addon/:booking_id', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin', 'superadmin']), (req: Request, res: Response, next: NextFunction) => {
+//     const pool = getDatabase();
+//     const controller = new AddAddonController(pool!);
+//     return controller.addAddon(req, res).catch(next);
+// });
 
 export default bookingRouter;
