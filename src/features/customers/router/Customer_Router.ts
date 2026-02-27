@@ -20,13 +20,12 @@ const customerRouter = Router();
 customerRouter.use(rateLimitMiddleware);
 
 // Instantiate controllers that are class-based (pass pool) - none for now
-const pool = getDatabase();
 
 // Customer routes - all require authentication
 customerRouter.get('/read/:customerId', jwtVerificationMiddleware, readCustomerController);
 
 // Placeholder routes for future operations
-customerRouter.get('/read-all',jwtVerificationMiddleware, readAllCustomersController);
+customerRouter.get('/read-all', jwtVerificationMiddleware, readAllCustomersController);
 customerRouter.patch('/update/:customerId', jwtVerificationMiddleware, updateCustomerController);
 customerRouter.delete('/delete/:customerId', jwtVerificationMiddleware, deleteCustomerController);
 

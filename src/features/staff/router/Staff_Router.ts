@@ -19,7 +19,6 @@ const staffRouter = Router();
 staffRouter.use(rateLimitMiddleware);
 
 // Instantiate controllers that are class-based (pass pool) - none for now
-const pool = getDatabase();
 
 // Staff routes - all require authentication
 staffRouter.get('/read/:staffId', jwtVerificationMiddleware, roleAuthorizationMiddleware(['staff', 'admin']), readStaffController);
