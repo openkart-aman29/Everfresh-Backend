@@ -20,3 +20,13 @@ export interface UpdateCompanyInput {
     subscription_tier?: 'free' | 'basic' | 'premium' | 'enterprise' | null;
     is_active?: boolean;
 }
+
+export interface CreateCompanyInput {
+    company_name: string;
+    slug?: string;
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    logo_url?: string | null;
+    subscription_tier?: 'free' | 'basic' | 'premium' | 'enterprise' | null;
+}

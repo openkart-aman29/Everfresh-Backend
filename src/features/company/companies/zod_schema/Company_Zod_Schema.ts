@@ -1,6 +1,7 @@
 
 import { z } from 'zod';
 import { ulidZodSchema } from '@/utilities/global_schemas/ULID_Zod_Schema';
+import { emailZodSchema, nameZodSchema, phoneZodSchema, addressZodSchema } from '@/modules/auth/zod_schema/Auth_Global_Zod_Schema';
 
 // ULID validation for company ID
 export const companyIdParamSchema = z.object({
@@ -20,12 +21,23 @@ export const readAllCompaniesQuerySchema = z.object({
 
 // Zod schema for Update Company Body
 export const updateCompanyBodySchema = z.object({
-    company_name: z.string().min(1, "Company name cannot be empty").optional(),
+    company_name: nameZodSchema.optional(),
     slug: z.string().min(1, "Slug cannot be empty").optional(),
-    email: z.string().email("Invalid email format").optional().nullable(),
-    phone: z.string().optional().nullable(),
+    email: emailZodSchema.optional().nullable(),
+    phone: phoneZodSchema.optional().nullable(),
     address: z.string().optional().nullable(),
     logo_url: z.string().url("Invalid URL").optional().nullable(),
     subscription_tier: z.enum(['free', 'basic', 'premium', 'enterprise']).optional().nullable(),
     is_active: z.boolean().optional()
+});
+
+// Zod schema for Create Company Body
+export const createCompanyBodySchema = z.object({
+    company_name: nameZodSchema,
+    slug: z.string().min(1, "Slug cannot be empty").optional(), // Can be auto-generated later
+    email: emailZodSchema,
+    phone: phoneZodSchema,
+    address: z.string(),
+    logo_url: z.string().url("Invalid URL").optional().nullable(),
+    subscription_tier: z.enum(['free', 'basic', 'premium', 'enterprise']).optional().nullable().default('free'),
 });
