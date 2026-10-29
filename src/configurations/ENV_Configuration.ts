@@ -127,6 +127,18 @@ export const ENV = cleanEnv(process.env, {
     SENDGRID_API_KEY: str({ default: '' }),
     BREVO_API_KEY: str({ default: '' }),
     // # =========================
+    // # PUBLIC ENQUIRIES (website)
+    // # =========================
+    // Tenant that unauthenticated website service requests are filed against.
+    DEFAULT_ENQUIRY_COMPANY_ID: str({ default: '' }),
+    // Inbox that new website service requests are emailed to. Empty disables it.
+    ENQUIRY_NOTIFICATION_EMAIL: str({ default: '' }),
+    // Google Geocoding API key, used server-side to turn a visitor's shared
+    // coordinates into an address. Empty disables the lookup; enquiries still
+    // store the raw coordinates.
+    GOOGLE_MAPS_API_KEY: str({ default: '' }),
+
+    // # =========================
     // # LOGGING
     // # =========================
     LOG_RETENTION_DAYS: num({ default: 2 }),
@@ -181,4 +193,9 @@ export const {
     EMAIL_FROM,
     SENDGRID_API_KEY,
     BREVO_API_KEY,
+
+    // ENQUIRIES
+    DEFAULT_ENQUIRY_COMPANY_ID,
+    ENQUIRY_NOTIFICATION_EMAIL,
+    GOOGLE_MAPS_API_KEY,
 } = ENV;

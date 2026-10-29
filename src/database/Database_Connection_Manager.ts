@@ -1,8 +1,17 @@
-import { Pool, PoolClient } from 'pg';
+import { Pool, PoolClient, types as pgTypes } from 'pg';
 import { ENV } from '@/configurations/ENV_Configuration';
 import { createFeatureLogger } from '@/utilities/logger/manager/Logger_Manager';
 
 const databaseLogger = createFeatureLogger('Database');
+
+// A PostgreSQL DATE is a calendar day with no time and no zone, but pg maps it
+// to a JS Date at server-local midnight. Serialising that to JSON produces a
+// UTC timestamp, so a booking on 2026-09-20 leaves the API as
+// "2026-09-19T20:00:00.000Z" and lands on the previous day for any client whose
+// offset differs from the server's. Returning the raw 'YYYY-MM-DD' text keeps a
+// calendar date a calendar date - which is what the clients already expect.
+const PG_DATE_OID = 1082;
+pgTypes.setTypeParser(PG_DATE_OID, (value: string) => value);
 
 let pool: Pool | null = null;
 

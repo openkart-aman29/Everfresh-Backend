@@ -7,6 +7,7 @@ export const getErrorStatus = (status: number): string => {
         case 409: return 'CONFLICT';
         case 422: return 'UNPROCESSABLE_ENTITY';
         case 500: return 'INTERNAL_SERVER_ERROR';
+        case 503: return 'SERVICE_UNAVAILABLE';
         default: return 'UNKNOWN_ERROR';
     }
 };

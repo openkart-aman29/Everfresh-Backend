@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>We have your request</title>
+</head>
+<body style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+
+    <div style="background-color: #0b132b; color: #ffffff; padding: 16px 24px; text-align: center;">
+      <h2 style="margin: 0; font-size: 22px;">We have your request</h2>
+    </div>
+
+    <div style="padding: 24px;">
+      <p style="margin: 0 0 12px;">Hello <strong><%= fullName %></strong>,</p>
+      <p style="margin: 0 0 20px;">
+        Thanks for choosing Everfresh. Your request is with our team and we will call you to confirm
+        the slot and the final price, usually within 2 hours during working hours.
+      </p>
+
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef; width: 38%;"><strong>Reference</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef; font-family: monospace; font-size: 12px;"><%= enquiryId %></td>
+        </tr>
+        <% if (serviceName) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Service</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= serviceName %></td>
+        </tr>
+        <% } %>
+        <% if (preferredDate) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Preferred date</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= preferredDate %></td>
+        </tr>
+        <% } %>
+        <% if (preferredTime) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Arrival window</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= preferredTime %></td>
+        </tr>
+        <% } %>
+        <% if (resolvedAddress) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Location</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= resolvedAddress %></td>
+        </tr>
+        <% } %>
+      </table>
+
+      <div style="margin-top: 20px; background: #f0fdfa; border-left: 3px solid #2dd4bf; padding: 12px 16px;">
+        <p style="margin: 0 0 6px;"><strong>Nothing has been charged.</strong></p>
+        <p style="margin: 0; font-size: 14px; color: #555;">
+          This is a request, not a confirmed booking. The price is fixed with you on the call, and
+          anything priced after an inspection is agreed before we start.
+        </p>
+      </div>
+
+      <% if (message) { %>
+      <div style="margin-top: 20px;">
+        <p style="margin: 0 0 8px;"><strong>What you asked for</strong></p>
+        <div style="background: #f8fafc; border-left: 3px solid #e9ecef; padding: 12px 16px; white-space: pre-wrap; font-size: 14px;"><%= message %></div>
+      </div>
+      <% } %>
+
+      <p style="margin: 24px 0 0; font-size: 14px; color: #555;">
+        Need to change something, or in a hurry? Call us on
+        <a href="tel:<%= companyPhone %>" style="color: #2dd4bf;"><%= companyPhone %></a>
+        and quote your reference above.
+      </p>
+    </div>
+
+    <div style="background: #f8fafc; padding: 16px 24px; text-align: center; font-size: 12px; color: #888;">
+      Everfresh Cleaning &amp; Maintenance &middot; <%= workingHours %>
+    </div>
+  </div>
+</body>
+</html>
