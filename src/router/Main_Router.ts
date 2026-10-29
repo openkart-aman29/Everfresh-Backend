@@ -7,7 +7,9 @@ import customerRouter from '@/features/customers/router/Customer_Router';
 import staffRouter from '@/features/staff/router/Staff_Router';
 import adminRouter from '@/features/admins/router/Admin_Router';
 import companyRouter from '@/features/company/companies/router/Company_Router';
-// import serviceRouter from '@/features/services/router/Service_Router';
+import healthRouter from '@/features/health/router/Health_Router';
+import enquiryRouter from '@/features/enquiries/router/Enquiry_Router';
+import serviceRouter from '@/features/services/router/Service_Router';
 // import paymentRouter from '@/features/payments/router/Payment_Router';
 
 import sseRouter from '@/features/company/bookings/router/SSE_Router';
@@ -18,6 +20,8 @@ export const createMainRouter = (pool?: Pool) => {
   // Most routers obtain the pool via `getDatabase()` internally.
 
   // Feature routes (bookingRouter is a Router instance)
+  mainRouter.use('/health', healthRouter);
+  mainRouter.use('/enquiries', enquiryRouter);
   mainRouter.use('/bookings', bookingRouter);
   mainRouter.use('/sse', sseRouter);
   mainRouter.use('/auth', authRouter);
@@ -25,7 +29,7 @@ export const createMainRouter = (pool?: Pool) => {
   mainRouter.use('/staff', staffRouter);
   mainRouter.use('/admin', adminRouter);
   mainRouter.use('/companies', companyRouter);
-  // mainRouter.use('/services', serviceRouter);
+  mainRouter.use('/services', serviceRouter);
   // mainRouter.use('/payments', paymentRouter);
 
   return mainRouter;

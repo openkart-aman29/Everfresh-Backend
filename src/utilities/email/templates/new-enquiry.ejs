@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Service Request</title>
+</head>
+<body style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; background-color: #f8f9fa; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+
+    <div style="background-color: #0b132b; color: #ffffff; padding: 16px 24px; text-align: center;">
+      <h2 style="margin: 0; font-size: 22px;">New Service Request</h2>
+    </div>
+
+    <div style="padding: 24px;">
+      <p style="margin: 0 0 12px;">Hello <strong>Everfresh Team</strong>,</p>
+      <p style="margin: 0 0 20px;">A new service request has come in from the website. Details below:</p>
+
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef; width: 35%;"><strong>Name</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= fullName %></td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Email</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;">
+            <a href="mailto:<%= email %>" style="color: #2dd4bf;"><%= email %></a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Phone</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;">
+            <a href="tel:<%= phone %>" style="color: #2dd4bf;"><%= phone %></a>
+          </td>
+        </tr>
+        <% if (serviceName) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Service</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= serviceName %></td>
+        </tr>
+        <% } %>
+        <% if (preferredDate) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Preferred date</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= preferredDate %></td>
+        </tr>
+        <% } %>
+        <% if (preferredTime) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Arrival window</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= preferredTime %></td>
+        </tr>
+        <% } %>
+        <% if (resolvedAddress) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Address</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><%= resolvedAddress %></td>
+        </tr>
+        <% } %>
+        <% if (mapUrl) { %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Shared location</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;">
+            <a href="<%= mapUrl %>" style="color: #2dd4bf;">Open in Google Maps</a>
+          </td>
+        </tr>
+        <% } %>
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef;"><strong>Reference</strong></td>
+          <td style="padding: 8px; border-bottom: 1px solid #e9ecef; font-family: monospace; font-size: 12px;"><%= enquiryId %></td>
+        </tr>
+      </table>
+
+      <% if (message) { %>
+      <div style="margin-top: 20px;">
+        <p style="margin: 0 0 8px;"><strong>Message</strong></p>
+        <div style="background: #f8fafc; border-left: 3px solid #2dd4bf; padding: 12px 16px; white-space: pre-wrap;"><%= message %></div>
+      </div>
+      <% } %>
+
+      <p style="margin-top: 24px; font-size: 14px; color: #555;">
+        Please follow up with the customer at your earliest convenience.
+      </p>
+
+      <p style="margin-top: 20px; font-size: 13px; color: #999; text-align: center;">
+        — Everfresh Website Notification
+      </p>
+    </div>
+  </div>
+</body>
+</html>

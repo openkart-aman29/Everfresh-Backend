@@ -4,7 +4,7 @@
   "description": "EverFresh Booking System Backend",
   "scripts": {
     "dev": "nodemon",
-    "build": "tsc && tsc-alias",
+    "build": "tsc && tsc-alias && node scripts/copy-email-templates.js",
     "start": "node ./dist/Server.js",
     "migrate": "node ./dist/database/migrations/run.js"
   },

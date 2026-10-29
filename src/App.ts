@@ -29,7 +29,11 @@ app.use(helmet({
 
 // CORS configuration
 const corsOptions = {
-    origin: ENV.ALLOWED_ORIGINS.split(','),
+    // Trim: the list is written with spaces after commas, and an untrimmed
+    // " https://example.com" never matches an Origin header.
+    origin: ENV.ALLOWED_ORIGINS.split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean),
     credentials: true,
     optionsSuccessStatus: 200,
 };
