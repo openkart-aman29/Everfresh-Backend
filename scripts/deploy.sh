@@ -94,8 +94,11 @@ git pull --ff-only origin "$BRANCH"
 say "Now at $(git rev-parse --short HEAD) (was $PREVIOUS_SHA)"
 
 # --- Build -----------------------------------------------------------------
-say "Installing dependencies"
-npm ci --omit=dev --no-audit --no-fund || npm install --omit=dev --no-audit --no-fund
+# The build needs devDependencies: tsc-alias and the @types packages live
+# there. Installing with --omit=dev fails at "tsc-alias: not found". They are
+# pruned again after the build, which matters on a container this full.
+say "Installing dependencies (including build tools)"
+npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
 say "Building"
 npm run build
@@ -106,6 +109,11 @@ npm run build
 TEMPLATES=$(ls dist/utilities/email/templates/*.ejs 2>/dev/null | wc -l)
 (( TEMPLATES > 0 )) || die "No .ejs templates in dist. Email would fail at runtime."
 say "Build OK (${TEMPLATES} email templates present)"
+
+# Runtime needs only `dependencies`. Dropping the build tools reclaims a few
+# hundred MB, which is worth having on a disk this close to full.
+say "Pruning build-only dependencies"
+npm prune --omit=dev --no-audit --no-fund
 
 # --- Restart ---------------------------------------------------------------
 say "Restarting PM2 process: $PM2_NAME"
