@@ -60,8 +60,22 @@ fi
 # --- Schema gate -----------------------------------------------------------
 # Refuse to ship code that queries columns the database does not have.
 say "Checking the database schema matches this code"
-set -a; # shellcheck disable=SC1090
-source "$ENV_FILE"; set +a
+
+# Read values rather than sourcing the file. ALLOWED_ORIGINS holds a
+# comma-and-space separated list, so `source` tries to run the second origin as
+# a command and, under set -e, kills the deploy.
+env_get() {
+    grep -E "^$1=" "$ENV_FILE" | tail -1 | cut -d= -f2- | tr -d '\r' | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
+}
+
+DB_HOST="$(env_get DB_HOST)"
+DB_PORT="$(env_get DB_PORT)"
+DB_NAME="$(env_get DB_NAME)"
+DB_USER="$(env_get DB_USER)"
+DB_PASSWORD="$(env_get DB_PASSWORD)"
+
+[[ -n "$DB_HOST" && -n "$DB_NAME" && -n "$DB_USER" ]] || die "DB_HOST, DB_NAME or DB_USER missing from $ENV_FILE"
+command -v psql >/dev/null || die "psql not found. Install it: apt-get install -y postgresql-client"
 
 MISSING=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "${DB_PORT:-5432}" \
     -U "$DB_USER" -d "$DB_NAME" -tAc \
