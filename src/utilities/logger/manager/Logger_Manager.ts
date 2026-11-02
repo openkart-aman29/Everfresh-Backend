@@ -65,6 +65,12 @@ const cleanupOldFolders = async (baseDir: string, retentionDays: number) => {
             }
         }
     } catch (error) {
+        // A missing log directory is the normal state of a fresh deployment -
+        // nothing has been written yet, so there is nothing to clean up. This
+        // was reported as an error on every start of a new install, which is
+        // noise that makes a real logging failure easy to walk past.
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+
         console.error('Failed to clean up old log folders:', error);
     }
 };

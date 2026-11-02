@@ -15,6 +15,41 @@ const app = express();
 
 app.set('trust proxy', 1); 
 
+// Normalise X-Forwarded-For before anything reads req.ip.
+//
+// IIS's ARR module appends the client's source port to the header -
+// "2.50.14.37:57914" - where nginx sends a bare address. Express hands that
+// whole string back as req.ip, express-rate-limit v7 validates it, and every
+// request arriving through IIS threw ERR_ERL_INVALID_IP_ADDRESS.
+//
+// Stripping the port here fixes req.ip once for the rate limiter, Morgan's
+// access log and the SSE client record, rather than passing a custom
+// keyGenerator to each consumer. Behind nginx it is a no-op, since nginx never
+// appends a port.
+const stripForwardedPort = (value: string): string => {
+    // [2001:db8::1]:57914 -> 2001:db8::1
+    const bracketed = /^\[(.+)\]:\d+$/.exec(value);
+    if (bracketed) return bracketed[1];
+
+    // 2.50.14.37:57914 -> 2.50.14.37. Anchored to four dotted octets so that a
+    // bare IPv6 address, which is itself full of colons, is left untouched.
+    const withPort = /^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/.exec(value);
+    return withPort ? withPort[1] : value;
+};
+
+app.use((req, _res, next) => {
+    const forwarded = req.headers['x-forwarded-for'];
+
+    if (typeof forwarded === 'string' && forwarded.includes(':')) {
+        req.headers['x-forwarded-for'] = forwarded
+            .split(',')
+            .map((part) => stripForwardedPort(part.trim()))
+            .join(', ');
+    }
+
+    next();
+});
+
 // Security middleware
 app.use(helmet({
     contentSecurityPolicy: {
