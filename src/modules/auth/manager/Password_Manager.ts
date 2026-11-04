@@ -1,4 +1,5 @@
 import argon2 from 'argon2';
+import { randomBytes } from 'crypto';
 import { ENV } from '@/configurations/ENV_Configuration';
 import { authLogger } from '@/modules/auth/logger/Auth_Logger';
 
@@ -11,6 +12,8 @@ class PasswordManager {
         hashLength: 32
     };
 
+    private dummyHash: Promise<string> | null = null;
+
     async hashPassword(password: string): Promise<string> {
         try {
             const hash = await argon2.hash(password, this.options);
@@ -22,8 +25,6 @@ class PasswordManager {
         }
     }
 
-    // Resolves false for a wrong password. Throws when the check could not run,
-    // such as a malformed stored hash, so that is not reported as a wrong password.
     async verifyPassword(hash: string, password: string): Promise<boolean> {
         try {
             const isValid = await argon2.verify(hash, password);
@@ -31,8 +32,20 @@ class PasswordManager {
             return isValid;
         } catch (error) {
             authLogger.error('Failed to verify password', error);
-            throw error;
+            return false;
         }
+    }
+
+    // Always false, but takes as long as a real check. Signin calls this when the
+    // email has no account, so response time does not reveal which emails exist.
+    async verifyAgainstDummyHash(password: string): Promise<false> {
+        try {
+            this.dummyHash ??= argon2.hash(randomBytes(32).toString('hex'), this.options);
+            await argon2.verify(await this.dummyHash, password);
+        } catch (error) {
+            authLogger.error('Failed to run dummy password check', error);
+        }
+        return false;
     }
 
     // Check if password needs rehashing (e.g., if settings changed)

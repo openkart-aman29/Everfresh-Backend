@@ -37,19 +37,28 @@ export const signInService = async (
         }
 
         const user = userResult.user;
-        if (!user) {
-            const status = 404;
+
+        // 2. Verify password
+        // A missing account gets the same response as a wrong password, in about
+        // the same time, and the active check waits until after this, so this
+        // public route does not reveal which emails have accounts.
+        const isPasswordValid = user
+            ? await passwordManager.verifyPassword(user.password_hash, input.password)
+            : await passwordManager.verifyAgainstDummyHash(input.password);
+
+        if (!user || !isPasswordValid) {
+            const status = 401;
             return {
                 success: false,
-                message: 'ACCOUNT_NOT_FOUND',
+                message: 'INVALID_CREDENTIALS',
                 status,
                 code: getErrorStatus(status),
                 data: null,
-                errors: [{ field: 'email', message: 'No account found with this email' }]
+                errors: [{ field: 'credentials', message: 'Invalid email or password' }]
             };
         }
 
-        // 2. Check if user is active
+        // 3. Check if user is active
         if (!user.is_active) {
             const status = 403;
             return {
@@ -59,37 +68,6 @@ export const signInService = async (
                 code: getErrorStatus(status),
                 data: null,
                 errors: [{ field: 'account', message: 'Account is disabled' }]
-            };
-        }
-
-        // 3. Verify password
-        let isPasswordValid: boolean;
-        try {
-            isPasswordValid = await passwordManager.verifyPassword(
-                user.password_hash,
-                input.password
-            );
-        } catch {
-            const status = 500;
-            return {
-                success: false,
-                message: 'PASSWORD_CHECK_FAILED',
-                status,
-                code: getErrorStatus(status),
-                data: null,
-                errors: [{ field: 'password', message: "This account's saved password could not be checked. Please contact an administrator" }]
-            };
-        }
-
-        if (!isPasswordValid) {
-            const status = 401;
-            return {
-                success: false,
-                message: 'INCORRECT_PASSWORD',
-                status,
-                code: getErrorStatus(status),
-                data: null,
-                errors: [{ field: 'password', message: 'Incorrect password' }]
             };
         }
 
