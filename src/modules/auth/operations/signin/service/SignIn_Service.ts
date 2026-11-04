@@ -23,16 +23,29 @@ export const signInService = async (
         authLogger.info('SignIn service', { email: input.email });
 
         // 1. Get user by email
-        const user = await getUserByEmail(input.email);
-        if (!user) {
-            const status = 401;
+        const userResult = await getUserByEmail(input.email);
+        if (!userResult.success) {
+            const status = 500;
             return {
                 success: false,
-                message: 'INVALID_CREDENTIALS',
+                message: 'ACCOUNT_LOOKUP_FAILED',
                 status,
                 code: getErrorStatus(status),
                 data: null,
-                errors: [{ field: 'credentials', message: 'Invalid email or password' }]
+                errors: [{ field: 'server', message: 'Could not check this account because of a server or database error' }]
+            };
+        }
+
+        const user = userResult.user;
+        if (!user) {
+            const status = 404;
+            return {
+                success: false,
+                message: 'ACCOUNT_NOT_FOUND',
+                status,
+                code: getErrorStatus(status),
+                data: null,
+                errors: [{ field: 'email', message: 'No account found with this email' }]
             };
         }
 
@@ -50,20 +63,33 @@ export const signInService = async (
         }
 
         // 3. Verify password
-        const isPasswordValid = await passwordManager.verifyPassword(
-            user.password_hash,
-            input.password
-        );
+        let isPasswordValid: boolean;
+        try {
+            isPasswordValid = await passwordManager.verifyPassword(
+                user.password_hash,
+                input.password
+            );
+        } catch {
+            const status = 500;
+            return {
+                success: false,
+                message: 'PASSWORD_CHECK_FAILED',
+                status,
+                code: getErrorStatus(status),
+                data: null,
+                errors: [{ field: 'password', message: "This account's saved password could not be checked. Please contact an administrator" }]
+            };
+        }
 
         if (!isPasswordValid) {
             const status = 401;
             return {
                 success: false,
-                message: 'INVALID_CREDENTIALS',
+                message: 'INCORRECT_PASSWORD',
                 status,
                 code: getErrorStatus(status),
                 data: null,
-                errors: [{ field: 'credentials', message: 'Invalid email or password' }]
+                errors: [{ field: 'password', message: 'Incorrect password' }]
             };
         }
 
@@ -94,10 +120,10 @@ export const signInService = async (
         // CUSTOMER validation
         if (roles.includes('customer')) {
             if (!user.customer_id) {
-                const status = 401;
+                const status = 403;
                 return {
                     success: false,
-                    message: 'INVALID_CREDENTIALS',
+                    message: 'CUSTOMER_PROFILE_NOT_FOUND',
                     status,
                     code: getErrorStatus(status),
                     data: null,
@@ -112,10 +138,10 @@ export const signInService = async (
         if (roles.includes('staff')) {
             if (!user.staff_id) {
                 // throw new Error('');
-                const status = 401;
+                const status = 403;
                 return {
                     success: false,
-                    message: 'INVALID_CREDENTIALS',
+                    message: 'STAFF_PROFILE_NOT_FOUND',
                     status,
                     code: getErrorStatus(status),
                     data: null,

@@ -22,6 +22,8 @@ class PasswordManager {
         }
     }
 
+    // Resolves false for a wrong password. Throws when the check could not run,
+    // such as a malformed stored hash, so that is not reported as a wrong password.
     async verifyPassword(hash: string, password: string): Promise<boolean> {
         try {
             const isValid = await argon2.verify(hash, password);
@@ -29,7 +31,7 @@ class PasswordManager {
             return isValid;
         } catch (error) {
             authLogger.error('Failed to verify password', error);
-            return false;
+            throw error;
         }
     }
 

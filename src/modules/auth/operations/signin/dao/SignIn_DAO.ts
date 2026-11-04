@@ -17,15 +17,17 @@ interface UserWithRoles {
 }
 
 class SignInDAO extends BaseAuthDAO {
-    async getUserByEmail(email: string): Promise<UserWithRoles | null> {
+    // success: false means the lookup failed, which is not the same as the
+    // email having no account (success: true, user: null).
+    async getUserByEmail(email: string): Promise<{ success: boolean; user: UserWithRoles | null }> {
         try {
             const pool = this.getPool();
             if (!pool) {
-                return null;
+                return { success: false, user: null };
             }
 
             const query = `
-                
+
 SELECT
                     u.user_id,
                     u.company_id,
@@ -64,14 +66,14 @@ SELECT
             const result = await pool.query(query, [email.toLowerCase()]);
 
             if (result.rows.length === 0) {
-                return null;
+                return { success: true, user: null };
             }
 
-            return result.rows[0];
+            return { success: true, user: result.rows[0] };
 
         } catch (error) {
             this.logError('getUserByEmail', error);
-            return null;
+            return { success: false, user: null };
         }
     }
 
@@ -139,7 +141,7 @@ SELECT
     }
 }
 
-export async function getUserByEmail(email: string): Promise<UserWithRoles | null> {
+export async function getUserByEmail(email: string): Promise<{ success: boolean; user: UserWithRoles | null }> {
     const dao = new SignInDAO();
     return dao.getUserByEmail(email);
 }
